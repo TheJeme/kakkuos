@@ -1,7 +1,7 @@
 pkgname=kakku-hyprland-settings
 pkgver=0.1.0
 pkgrel=1
-pkgdesc="Kakku OS Hyprland settings and desktop defaults"
+pkgdesc="KakkuOS Hyprland settings and desktop defaults"
 arch=('any')
 url="https://example.org/kakku"
 license=('MIT')
@@ -10,6 +10,7 @@ depends=(
   'hyprpaper'
   'hypridle'
   'hyprlock'
+  'hyprsunset'
   'waybar'
   'rofi-wayland'
   'kitty'
@@ -22,7 +23,6 @@ depends=(
   'pamixer'
   'playerctl'
   'brightnessctl'
-  'qt6ct'
   'fontconfig'
   'ttf-jetbrains-mono-nerd'
   'zsh'
@@ -50,6 +50,10 @@ package() {
   install -dm755 "$pkgdir/usr/share/kakku/themes"
   cp -r "$repo_root/themes/." "$pkgdir/usr/share/kakku/themes/"
 
+  install -dm755 "$pkgdir/usr/share/kakku/packages"
+  cp -r "$repo_root/packages/." "$pkgdir/usr/share/kakku/packages/"
+
+  install -Dm755 "$repo_root/bin/kakku" "$pkgdir/usr/bin/kakku"
   install -Dm755 "$repo_root/bin/kakku-theme" "$pkgdir/usr/bin/kakku-theme"
   install -Dm755 "$repo_root/bin/kakku-screenshot" "$pkgdir/usr/bin/kakku-screenshot"
 

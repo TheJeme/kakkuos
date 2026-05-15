@@ -9,6 +9,7 @@ usage() {
 Usage:
   kakku-theme list
   kakku-theme set <theme>
+  kakku-theme current
 
 Themes:
   matcha
@@ -20,6 +21,7 @@ Themes:
   caramel
   mocha
   vanilla
+  honey
 EOF
 }
 
@@ -33,6 +35,16 @@ copy_theme_file() {
   fi
 }
 
+reload_session() {
+  if command -v hyprctl >/dev/null 2>&1; then
+    hyprctl reload >/dev/null 2>&1 || true
+  fi
+
+  if command -v makoctl >/dev/null 2>&1; then
+    makoctl reload >/dev/null 2>&1 || true
+  fi
+}
+
 list_themes() {
   local theme
 
@@ -40,6 +52,16 @@ list_themes() {
     [[ -d "$theme" ]] || continue
     basename "$theme"
   done
+}
+
+current_theme() {
+  local current_file="$CONFIG_HOME/kakku-theme"
+
+  if [[ -f "$current_file" ]]; then
+    cat "$current_file"
+  else
+    echo "matcha"
+  fi
 }
 
 set_theme() {
@@ -57,15 +79,22 @@ set_theme() {
   copy_theme_file "$theme_dir/rofi.rasi" "$CONFIG_HOME/rofi/theme.rasi"
   copy_theme_file "$theme_dir/kitty.conf" "$CONFIG_HOME/kitty/theme.conf"
   copy_theme_file "$theme_dir/hyprland.conf" "$CONFIG_HOME/hypr/theme.conf"
+  copy_theme_file "$theme_dir/mako" "$CONFIG_HOME/mako/config"
+  copy_theme_file "$theme_dir/hyprlock.conf" "$CONFIG_HOME/hypr/hyprlock.conf"
+  copy_theme_file "$theme_dir/hyprqt6engine.conf" "$CONFIG_HOME/hypr/hyprqt6engine.conf"
 
   echo "$theme" > "$CONFIG_HOME/kakku-theme"
+  reload_session
   echo "Kakku theme set to $theme."
-  echo "Restart Waybar, Rofi, Kitty, and Hyprland session components to fully apply it."
+  echo "Restart open Kitty, Rofi, and Qt applications to fully apply it."
 }
 
 case "${1:-}" in
   list)
     list_themes
+    ;;
+  current)
+    current_theme
     ;;
   set)
     if [[ -z "${2:-}" ]]; then

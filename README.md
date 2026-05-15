@@ -1,10 +1,10 @@
-# Kakku OS
+# KakkuOS
 
-Kakku OS is a CachyOS-based Hyprland desktop profile. The first goal is a reproducible setup repository that can be applied on top of an installed CachyOS Hyprland system. Later phases package the defaults as Arch packages and use those packages in an ISO profile.
+KakkuOS is a CachyOS-based Hyprland desktop profile. The first goal is a reproducible setup repository that can be applied on top of an installed CachyOS Hyprland system. Later phases package the defaults as Arch packages and use those packages in an ISO profile.
 
 ## Target Architecture
 
-Kakku OS is built from:
+KakkuOS is built from:
 
 - CachyOS base
 - CachyOS repositories
@@ -51,6 +51,7 @@ kakku/
     tiramisu/
     vanilla/
   bin/
+    kakku
     kakku-theme
     kakku-screenshot
   branding/
@@ -103,6 +104,30 @@ Check that the profile package lists and `kakku-desktop` package dependencies st
 scripts/check-package-sync.sh
 ```
 
+## Kakku Command
+
+Kakku includes a small helper command:
+
+```bash
+kakku help
+```
+
+Available commands:
+
+| Command | Purpose |
+|---|---|
+| `kakku info` | Show Kakku, base OS, kernel, Hyprland, and current theme information. |
+| `kakku doctor` | Check expected commands, configs, theme paths, wallpaper, and key services. |
+| `kakku services` | Show active/enabled state for key services. |
+| `kakku keybinds` | Print KakkuOS default keyboard shortcuts. |
+| `kakku paths` | Show important Kakku config and system paths. |
+| `kakku packages` | Show installed package profile information. |
+| `kakku theme list` | List available themes. |
+| `kakku theme current` | Show the current theme. |
+| `kakku theme set <theme>` | Apply a theme. |
+| `kakku update` | Run a normal interactive system update with `pacman`, then AUR updates with `paru` or `yay` if available. |
+| `kakku version` | Show the Kakku version string. |
+
 ## Relationship To CachyOS
 
 Kakku is intended to stay a thin CachyOS-based desktop profile, not a deep fork.
@@ -135,6 +160,7 @@ These packages make the system useful for source builds, package builds, and day
 |---|---|
 | `base-devel` | Standard Arch build tool group required for `makepkg` and many source builds. |
 | `git` | Version control for projects, dotfiles, package sources, and AUR workflows. |
+| `pacman-contrib` | Arch maintenance helpers such as `paccache` for package cache cleanup. |
 
 ### Hyprland Desktop
 
@@ -147,6 +173,7 @@ These packages provide the Wayland desktop session and its core user interface.
 | `hypridle` | Idle daemon for locking, sleeping, or turning off displays after inactivity. |
 | `hyprlock` | Lock screen for Hyprland. |
 | `hyprpicker` | Wayland color picker for grabbing colors from the screen. |
+| `hyprsunset` | Hyprland-native blue-light and gamma adjustment utility. |
 | `xdg-desktop-portal-hyprland` | Portal integration for screen sharing, file pickers, and desktop app permissions. |
 | `xdg-utils` | Basic desktop integration commands for opening files, URLs, and default apps. |
 | `xdg-user-dirs` | Creates standard user folders like Downloads, Documents, Pictures, and Videos. |
@@ -158,9 +185,9 @@ These packages provide the Wayland desktop session and its core user interface.
 | `discord` | Voice and chat client for communities, gaming, and development groups. |
 | `mako` | Notification daemon for Wayland desktops. |
 | `hyprpolkitagent` | Hyprland-native graphical authentication prompts for admin actions. |
-| `qt6ct` | Qt 6 appearance configuration, used by Kakku's environment defaults. |
+| `hyprqt6engine` | Hyprland Qt 6 theme engine from the AUR, used by Kakku's environment defaults. |
 
-Kakku autostarts `waybar`, `hyprpaper`, `mako`, `hypridle`, and `hyprpolkitagent` from the Hyprland config.
+Kakku autostarts `waybar`, `hyprpaper`, `mako`, `hypridle`, `hyprsunset`, and `hyprpolkitagent` from the Hyprland config.
 
 ### Audio, Network, And Devices
 
@@ -256,7 +283,16 @@ Kakku includes a gaming-ready baseline while still relying on CachyOS for optimi
 | `protonup-qt` | GUI for installing Proton-GE and compatibility tools. |
 | `mangohud` | Performance overlay for Vulkan/OpenGL games. |
 | `gamescope` | Nested game compositor useful for scaling, HDR workflows, and Steam-style sessions. |
+| `gamemode` | Lets games request temporary performance-oriented system tuning. |
 | `discord` | Common voice/chat companion for gaming sessions and communities. |
+
+Useful launch options:
+
+```text
+gamemoderun %command%
+mangohud %command%
+mangohud gamemoderun %command%
+```
 
 ### Media And Creative Tools
 
@@ -315,6 +351,7 @@ Kakku includes these cake-style themes:
 - `caramel`
 - `mocha`
 - `vanilla`
+- `honey`
 
 The default theme is `matcha`.
 
@@ -324,13 +361,19 @@ List installed themes:
 kakku-theme list
 ```
 
+Show the current theme:
+
+```bash
+kakku-theme current
+```
+
 Apply a theme:
 
 ```bash
 kakku-theme set blueberry
 ```
 
-The theme switcher updates the current user's Hyprland, Waybar, Rofi, and Kitty theme fragments.
+The theme switcher updates the current user's Hyprland, Hyprlock, Hyprqt6engine, Waybar, Rofi, Kitty, and Mako theme fragments. It also tries to reload Hyprland and Mako. Open terminal, launcher, and Qt application windows may need to be restarted to pick up the new theme.
 
 ## Phase 2: Package The Defaults
 
@@ -358,4 +401,4 @@ sudo pacman -S kakku-desktop
 
 ## License
 
-Kakku OS repository assets and scripts are licensed under the MIT License.
+KakkuOS repository assets and scripts are licensed under the MIT License.

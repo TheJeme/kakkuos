@@ -3,6 +3,7 @@ hyprpaper
 hypridle
 hyprlock
 hyprpicker
+hyprsunset
 xdg-desktop-portal-hyprland
 xdg-utils
 xdg-user-dirs
@@ -23,7 +24,6 @@ swappy
 playerctl
 mako
 hyprpolkitagent
-qt6ct
 fontconfig
 noto-fonts
 noto-fonts-cjk

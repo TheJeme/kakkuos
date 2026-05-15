@@ -1,0 +1,19 @@
+font=Inter 10
+background-color=#160d12ee
+text-color=#f4dce5ff
+border-color=#c73f5fff
+progress-color=over #c73f5fff
+border-size=2
+border-radius=6
+padding=10
+margin=12
+width=360
+height=120
+default-timeout=6000
+anchor=top-right
+icons=1
+max-icon-size=48
+
+[urgency=high]
+border-color=#ff6b8aff
+default-timeout=0

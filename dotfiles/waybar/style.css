@@ -27,8 +27,30 @@ window#waybar {
 #tray,
 #pulseaudio,
 #network,
-#battery {
+#battery,
+#cpu,
+#memory,
+#disk,
+#bluetooth,
+#custom-theme,
+#custom-updates,
+#custom-power,
+#window {
   padding: 0 10px;
+}
+
+#custom-power {
+  background: @accent;
+  color: @background;
+}
+
+#custom-updates,
+#custom-theme {
+  color: @accent;
+}
+
+#window {
+  color: @muted;
 }
 
 #battery.warning {

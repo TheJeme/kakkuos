@@ -1,0 +1,21 @@
+gui:
+  nerdFontsVersion: "3"
+  showFileTree: true
+  showRandomTip: false
+  showCommandLog: false
+  theme:
+    activeBorderColor:
+      - "#9ece6a"
+      - bold
+    inactiveBorderColor:
+      - "#a7b7a3"
+    selectedLineBgColor:
+      - "#213026"
+    optionsTextColor:
+      - "#7aa2f7"
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+update:
+  method: never

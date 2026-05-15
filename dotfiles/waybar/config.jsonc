@@ -1,17 +1,64 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 32,
+  "height": 34,
   "spacing": 8,
-  "modules-left": ["hyprland/workspaces"],
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
-  "modules-right": ["tray", "pulseaudio", "network", "battery"],
+  "modules-right": [
+    "custom/theme",
+    "custom/updates",
+    "cpu",
+    "memory",
+    "disk",
+    "bluetooth",
+    "network",
+    "pulseaudio",
+    "battery",
+    "tray",
+    "custom/power"
+  ],
   "hyprland/workspaces": {
     "disable-scroll": true,
     "all-outputs": true
   },
+  "hyprland/window": {
+    "format": "{}",
+    "max-length": 72,
+    "separate-outputs": true
+  },
   "clock": {
-    "format": "{:%a %d %b  %H:%M}"
+    "format": "{:%a %d %b  %H:%M}",
+    "tooltip-format": "{:%A, %d %B %Y}"
+  },
+  "custom/theme": {
+    "exec": "kakku-waybar-theme",
+    "interval": 5,
+    "on-click": "kakku-theme-menu"
+  },
+  "custom/updates": {
+    "exec": "kakku-waybar-updates",
+    "interval": 1800,
+    "on-click": "kitty -e sudo pacman -Syu"
+  },
+  "cpu": {
+    "format": "cpu {usage}%",
+    "interval": 5
+  },
+  "memory": {
+    "format": "mem {percentage}%",
+    "interval": 5
+  },
+  "disk": {
+    "format": "disk {percentage_used}%",
+    "path": "/",
+    "interval": 60
+  },
+  "bluetooth": {
+    "format": "bt {status}",
+    "format-disabled": "bt off",
+    "format-connected": "bt {device_alias}",
+    "tooltip-format": "{controller_alias}"
   },
   "network": {
     "format-wifi": "{essid}",
@@ -22,11 +69,16 @@
   "pulseaudio": {
     "format": "{volume}%",
     "format-muted": "muted",
-    "scroll-step": 5
+    "scroll-step": 5,
+    "on-click": "pamixer -t"
   },
   "battery": {
     "format": "{capacity}%",
     "format-charging": "{capacity}% charging"
+  },
+  "custom/power": {
+    "format": "power",
+    "on-click": "kakku-power-menu",
+    "tooltip": false
   }
 }
-

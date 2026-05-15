@@ -1,7 +1,7 @@
 pkgname=kakku-desktop
 pkgver=0.1.0
 pkgrel=1
-pkgdesc="Kakku OS default desktop package set"
+pkgdesc="KakkuOS default desktop package set"
 arch=('any')
 url="https://example.org/kakku"
 license=('MIT')
@@ -12,6 +12,7 @@ depends=(
   'hypridle'
   'hyprlock'
   'hyprpicker'
+  'hyprsunset'
   'xdg-desktop-portal-hyprland'
   'xdg-utils'
   'xdg-user-dirs'
@@ -34,6 +35,7 @@ depends=(
   'steam'
   'mangohud'
   'gamescope'
+  'gamemode'
   'heroic-games-launcher'
   'protonup-qt'
   'mpv'
@@ -43,7 +45,6 @@ depends=(
   'playerctl'
   'mako'
   'hyprpolkitagent'
-  'qt6ct'
   'fontconfig'
   'noto-fonts'
   'noto-fonts-cjk'
@@ -58,6 +59,7 @@ depends=(
   'docker-compose'
   'git'
   'base-devel'
+  'pacman-contrib'
   'zsh'
   'starship'
   'zoxide'
@@ -88,6 +90,7 @@ depends=(
 optdepends=(
   'visual-studio-code-bin: Microsoft Visual Studio Code from the AUR or a Kakku package repo'
   'localsend-bin: LocalSend file sharing from the AUR or a Kakku package repo'
+  'hyprqt6engine: Hyprland Qt 6 theme engine from the AUR or a Kakku package repo'
 )
 
 package() {

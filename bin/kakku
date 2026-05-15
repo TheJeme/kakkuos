@@ -1,0 +1,248 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+KAKKU_SHARE="${KAKKU_SHARE:-/usr/share/kakku}"
+KAKKU_THEMES_DIR="${KAKKU_THEMES_DIR:-$KAKKU_SHARE/themes}"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  kakku help
+  kakku info
+  kakku doctor
+  kakku services
+  kakku keybinds
+  kakku paths
+  kakku packages
+  kakku theme list
+  kakku theme current
+  kakku theme set <theme>
+  kakku update
+  kakku version
+EOF
+}
+
+has_command() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+check_command() {
+  local command_name="$1"
+
+  if has_command "$command_name"; then
+    echo "ok   command: $command_name"
+  else
+    echo "miss command: $command_name"
+    return 1
+  fi
+}
+
+check_path() {
+  local path="$1"
+
+  if [[ -e "$path" ]]; then
+    echo "ok   path: $path"
+  else
+    echo "miss path: $path"
+    return 1
+  fi
+}
+
+check_service_enabled() {
+  local service="$1"
+
+  if has_command systemctl && systemctl is-enabled "$service" >/dev/null 2>&1; then
+    echo "ok   service enabled: $service"
+  else
+    echo "warn service not enabled: $service"
+  fi
+}
+
+show_service_status() {
+  local service="$1"
+  local state="unknown"
+  local enabled="unknown"
+
+  if has_command systemctl; then
+    state="$(systemctl is-active "$service" 2>/dev/null || true)"
+    enabled="$(systemctl is-enabled "$service" 2>/dev/null || true)"
+  fi
+
+  printf '%-16s active=%-10s enabled=%s\n' "$service" "$state" "$enabled"
+}
+
+show_services() {
+  for service in NetworkManager bluetooth docker tailscaled; do
+    show_service_status "$service"
+  done
+}
+
+show_keybinds() {
+  cat <<'EOF'
+KakkuOS keybindings:
+  Super+Enter       Open terminal
+  Super+D           Open app launcher
+  Super+E           Open file manager
+  Super+Q           Close active window
+  Super+V           Toggle floating
+  Super+L           Lock screen
+  Super+Shift+M     Open power menu
+  Super+Shift+T     Open theme menu
+  Print             Region screenshot with annotation
+  Shift+Print       Full screenshot to ~/Pictures/Screenshots
+  Super+1..0        Switch workspace
+  Super+Shift+1..0  Move window to workspace
+  Super+Arrows      Move focus
+  Super+Shift+Arrows Move window
+  Volume keys       Adjust/mute audio
+  Media keys        Play/pause/next/previous
+  Brightness keys   Adjust display brightness
+EOF
+}
+
+show_info() {
+  echo "KakkuOS"
+  echo
+
+  if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    echo "Base: ${PRETTY_NAME:-unknown}"
+  fi
+
+  if has_command uname; then
+    echo "Kernel: $(uname -r)"
+  fi
+
+  if has_command hyprctl; then
+    hyprctl version 2>/dev/null | head -n 1 || true
+  fi
+
+  if has_command kakku-theme; then
+    echo "Theme: $(kakku-theme current)"
+  fi
+}
+
+show_paths() {
+  cat <<EOF
+Kakku paths:
+  Config home:        $CONFIG_HOME
+  Hyprland config:    $CONFIG_HOME/hypr
+  Waybar config:      $CONFIG_HOME/waybar
+  Rofi config:        $CONFIG_HOME/rofi
+  Kitty config:       $CONFIG_HOME/kitty
+  Mako config:        $CONFIG_HOME/mako
+  Current theme file: $CONFIG_HOME/kakku-theme
+  Themes:             $KAKKU_THEMES_DIR
+  Shared files:       $KAKKU_SHARE
+  Backgrounds:        /usr/share/backgrounds/kakku
+EOF
+}
+
+show_packages() {
+  local repo_packages="/usr/share/kakku/packages"
+
+  if [[ -d "$repo_packages/profiles" ]]; then
+    echo "Package profiles:"
+    find "$repo_packages/profiles" -maxdepth 1 -type f -name '*.txt' -printf '  %f\n' | sort
+  else
+    echo "Package profiles are available in the Kakku source repo under packages/profiles/."
+  fi
+
+  echo
+  echo "AUR packages are listed in packages/aur.txt in the Kakku source repo."
+}
+
+run_doctor() {
+  local failed=0
+
+  for command_name in hyprland waybar rofi kitty mako hyprlock hypridle hyprpaper hyprsunset hyprpolkitagent grim slurp swappy pamixer playerctl brightnessctl kakku-theme kakku-screenshot; do
+    check_command "$command_name" || failed=1
+  done
+
+  check_path "$CONFIG_HOME/hypr/hyprland.conf" || failed=1
+  check_path "$CONFIG_HOME/waybar/config.jsonc" || failed=1
+  check_path "$CONFIG_HOME/rofi/config.rasi" || failed=1
+  check_path "$CONFIG_HOME/kitty/kitty.conf" || failed=1
+  check_path "$CONFIG_HOME/mako/config" || failed=1
+  check_path "$KAKKU_THEMES_DIR" || failed=1
+  check_path "/usr/share/backgrounds/kakku/wallpaper.png" || failed=1
+
+  check_service_enabled NetworkManager
+  check_service_enabled bluetooth
+  check_service_enabled docker
+  check_service_enabled tailscaled
+
+  if (( failed )); then
+    echo
+    echo "Kakku doctor found missing required commands or paths."
+    exit 1
+  fi
+
+  echo
+  echo "Kakku doctor completed."
+}
+
+run_update() {
+  if ! has_command sudo || ! has_command pacman; then
+    echo "kakku update requires sudo and pacman." >&2
+    exit 1
+  fi
+
+  echo "Updating repo packages with pacman..."
+  sudo pacman -Syu
+
+  if has_command paru; then
+    echo
+    echo "Updating AUR packages with paru..."
+    paru -Syu
+  elif has_command yay; then
+    echo
+    echo "Updating AUR packages with yay..."
+    yay -Syu
+  else
+    echo
+    echo "No AUR helper found. Skipping AUR updates."
+  fi
+
+  echo
+  echo "Update complete. Reboot if kernel, driver, systemd, Mesa, or core system packages changed."
+}
+
+case "${1:-help}" in
+  help|-h|--help)
+    usage
+    ;;
+  info)
+    show_info
+    ;;
+  doctor)
+    run_doctor
+    ;;
+  services)
+    show_services
+    ;;
+  keybinds)
+    show_keybinds
+    ;;
+  paths)
+    show_paths
+    ;;
+  packages)
+    show_packages
+    ;;
+  theme)
+    shift
+    kakku-theme "$@"
+    ;;
+  update)
+    run_update
+    ;;
+  version)
+    echo "KakkuOS 0.1.0"
+    ;;
+  *)
+    usage >&2
+    exit 1
+    ;;
+esac

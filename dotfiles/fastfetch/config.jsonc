@@ -5,21 +5,25 @@
     "type": "file"
   },
   "display": {
-    "separator": "  "
+    "separator": "  ",
+    "color": "green"
   },
   "modules": [
     "title",
     "separator",
     "os",
+    "host",
     "kernel",
+    "uptime",
     "packages",
     "shell",
     "wm",
+    "de",
     "terminal",
     "cpu",
     "gpu",
     "memory",
-    "disk"
+    "disk",
+    "localip"
   ]
 }
-

@@ -145,6 +145,10 @@ if [[ -f "$REPO_DIR/bin/kakku-theme" ]]; then
   sudo install -Dm755 "$REPO_DIR/bin/kakku-theme" /usr/bin/kakku-theme
 fi
 
+if [[ -f "$REPO_DIR/bin/kakku" ]]; then
+  sudo install -Dm755 "$REPO_DIR/bin/kakku" /usr/bin/kakku
+fi
+
 if [[ -f "$REPO_DIR/bin/kakku-screenshot" ]]; then
   sudo install -Dm755 "$REPO_DIR/bin/kakku-screenshot" /usr/bin/kakku-screenshot
 fi

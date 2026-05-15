@@ -1,6 +1,6 @@
 mangohud
 gamescope
+gamemode
 steam
 heroic-games-launcher
 protonup-qt
-

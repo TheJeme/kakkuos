@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+theme="$(
+  kakku-theme list |
+    rofi -dmenu -i -p "Theme"
+)"
+
+if [[ -n "$theme" ]]; then
+  kakku-theme set "$theme"
+fi
+
