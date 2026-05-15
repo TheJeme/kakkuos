@@ -183,6 +183,18 @@ sudo systemctl enable docker || true
 sudo systemctl enable tailscaled || true
 sudo usermod -aG docker "$USER" || true
 
+# Set up greetd as login manager
+if command -v tuigreet >/dev/null 2>&1; then
+  sudo install -Dm644 "$REPO_DIR/system/greetd/config.toml" /etc/greetd/config.toml
+  sudo systemctl disable sddm.service 2>/dev/null || true
+  sudo systemctl enable greetd.service || true
+fi
+
+# Override os-release with KakkuOS branding
+if [[ -f "$REPO_DIR/system/os-release" ]]; then
+  sudo cp "$REPO_DIR/system/os-release" /usr/lib/os-release
+fi
+
 echo ""
 echo "  ╔══════════════════════════════════════════════════════════════╗"
 echo "  ║               Kakku setup complete!                          ║"
