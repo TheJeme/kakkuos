@@ -175,4 +175,10 @@ sudo systemctl enable docker || true
 sudo systemctl enable tailscaled || true
 sudo usermod -aG docker "$USER" || true
 
-echo "Kakku setup complete. Reboot recommended."
+echo ""
+echo "  ╔══════════════════════════════════════════════════════════════╗"
+echo "  ║               Kakku setup complete!                          ║"
+echo "  ║                                                              ║"
+echo "  ║  A reboot is recommended to apply all changes.               ║"
+echo "  ╚══════════════════════════════════════════════════════════════╝"
+echo ""
