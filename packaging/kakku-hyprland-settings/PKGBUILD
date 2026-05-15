@@ -3,7 +3,7 @@ pkgver=0.1.0
 pkgrel=1
 pkgdesc="KakkuOS Hyprland settings and desktop defaults"
 arch=('any')
-url="https://example.org/kakku"
+url="https://kakkuos.jeme.app/"
 license=('MIT')
 depends=(
   'hyprland'

@@ -3,8 +3,9 @@ pkgver=0.1.0
 pkgrel=1
 pkgdesc="KakkuOS default desktop package set"
 arch=('any')
-url="https://example.org/kakku"
+url="https://kakkuos.jeme.app/"
 license=('MIT')
+install=kakku-desktop.install
 depends=(
   'kakku-hyprland-settings'
   'hyprland'

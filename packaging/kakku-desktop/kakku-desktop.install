@@ -1,0 +1,15 @@
+post_install() {
+  echo ""
+  echo "  ╔══════════════════════════════════════════════════════════════╗"
+  echo "  ║               Welcome to KakkuOS!                           ║"
+  echo "  ║                                                              ║"
+  echo "  ║  Installation complete! Please reboot to apply changes.      ║"
+  echo "  ╚══════════════════════════════════════════════════════════════╝"
+  echo ""
+}
+
+post_upgrade() {
+  echo ""
+  echo "  KakkuOS updated. A reboot is recommended."
+  echo ""
+}
