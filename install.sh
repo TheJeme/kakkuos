@@ -222,6 +222,12 @@ if command -v xdg-mime >/dev/null 2>&1 && command -v kakku-defaults >/dev/null 2
   kakku-defaults || true
 fi
 
+# Initialize the default Kakku theme (matcha) so dynamically generated configs are placed correctly
+if command -v kakku-theme >/dev/null 2>&1; then
+  export HYPRLAND_INSTANCE_SIGNATURE="" # Prevent reload errors if running from TTY
+  kakku-theme set matcha >/dev/null 2>&1 || true
+fi
+
 # Disable CachyOS welcome app autostart
 if [[ -f /etc/xdg/autostart/cachyos-hello.desktop ]]; then
   sudo rm -f /etc/xdg/autostart/cachyos-hello.desktop
@@ -256,10 +262,15 @@ if [[ -f "$REPO_DIR/system/os-release" ]]; then
   sudo cp "$REPO_DIR/system/os-release" /usr/lib/os-release
 fi
 
+# Apply KakkuOS branding to bootloader
+if [[ -x "$REPO_DIR/bin/kakku-brand-bootloader" ]]; then
+  sudo "$REPO_DIR/bin/kakku-brand-bootloader"
+fi
+
 echo ""
 echo "  ╔══════════════════════════════════════════════════════════════╗"
-echo "  ║               Kakku setup complete!                          ║"
-echo "  ║                                                              ║"
-echo "  ║  A reboot is recommended to apply all changes.               ║"
-echo "  ╚══════════════════════════════════════════════════════════════╝"
+echo "  ║               Kakku setup complete!             ║"
+echo "  ║                                                 ║"
+echo "  ║  A reboot is recommended to apply all changes.  ║"
+echo "  ╚═════════════════════════════════════════════════╝"
 echo ""

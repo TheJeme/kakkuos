@@ -20,11 +20,29 @@ replace_os_name() {
   local file="$1"
   [[ -f "$file" ]] || return 0
   
-  if grep -qi "CachyOS" "$file"; then
-    backup_file "$file"
-    sed -i -E 's/\bCachyOS\b/KakkuOS/g; s/\bcachyos\b/kakkuos/g' "$file"
-    echo "Renamed CachyOS to KakkuOS in $file."
+  backup_file "$file"
+  
+  # Restore from backup first if we messed up kernel paths previously
+  if grep -q "kernel_path.*kakkuos" "$file" && [[ -f "$file.kakku.bak" ]]; then
+      cp "$file.kakku.bak" "$file"
   fi
+
+  # Safely replace CachyOS in Menu Titles only (lines starting with ':' or 'title ' or 'GRUB_DISTRIBUTOR')
+  sed -i -E '/^:/ s/[Cc]achy[Oo][Ss]/KakkuOS/g' "$file"
+  sed -i -E '/^:/ s/linux-cachyos/KakkuOS/g' "$file"
+  sed -i -E '/^:/ s/\(KakkuOS\)//g' "$file"
+  sed -i -E '/^:/ s/ - KakkuOS//g' "$file"
+  
+  sed -i -E '/^title/ s/[Cc]achy[Oo][Ss]/KakkuOS/g' "$file"
+  sed -i -E '/^title/ s/linux-cachyos/KakkuOS/g' "$file"
+  
+  sed -i -E '/^GRUB_DISTRIBUTOR/ s/[Cc]achy[Oo][Ss]/KakkuOS/g' "$file"
+  
+  # Clean up any weird dangling characters in menus
+  sed -i -E '/^:/ s/ - $//g' "$file"
+  sed -i -E '/^:/ s/ -$//g' "$file"
+  
+  echo "Safely branded bootloader menus in $file."
 }
 
 require_root
@@ -46,10 +64,15 @@ if [[ -d /boot/loader/entries ]]; then
   done
 fi
 
-# For GRUB (if users happen to use it)
+# For GRUB 
 replace_os_name /etc/default/grub
 if command -v grub-mkconfig >/dev/null 2>&1 && [[ -f /etc/default/grub ]]; then
   echo "If applying for GRUB, regenerate the config: sudo grub-mkconfig -o /boot/grub/grub.cfg"
+fi
+
+# Override CachyOS's limine auto-generator string if it exists
+if [[ -f /etc/os-release ]]; then
+  sed -i -E 's/PRETTY_NAME="[^"]*"/PRETTY_NAME="KakkuOS"/' /etc/os-release || true
 fi
 
 echo "Bootloader branding step complete."
