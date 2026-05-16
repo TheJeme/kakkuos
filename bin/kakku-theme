@@ -85,6 +85,7 @@ set_theme() {
   copy_theme_file "$theme_dir/wallpaper.png" "$CONFIG_HOME/hypr/wallpaper.png"
   copy_theme_file "$theme_dir/cava" "$CONFIG_HOME/cava/config"
   copy_theme_file "$theme_dir/musikcube.json" "$CONFIG_HOME/musikcube/themes/kakku.json"
+  copy_theme_file "$theme_dir/starship.toml" "$CONFIG_HOME/starship.toml"
 
   echo "$theme" > "$CONFIG_HOME/kakku-theme"
   reload_session
