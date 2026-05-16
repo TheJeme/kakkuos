@@ -274,6 +274,7 @@ Kakku includes modern replacements for common Unix commands while keeping behavi
 | `httpie` | HTTP Client | User-friendly, colorized command-line HTTP client (modern `curl` alternative). |
 | `glow` | Markdown Viewer | Renders Markdown files beautifully directly in the terminal. |
 | `trippy` | Network Diagnostics | Modern network diagnostic TUI combining `ping` and `traceroute`. |
+| `pacseek` | Package Manager | Beautiful terminal user interface for searching and installing Arch/AUR packages. |
 
 Configured shell behavior:
 

@@ -6,3 +6,4 @@ pinta-git
 bibata-cursor-theme-bin
 cbonsai
 musikcube
+pacseek
