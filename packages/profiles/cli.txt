@@ -30,12 +30,10 @@ poppler
 resvg
 wl-clipboard
 cmatrix
-cbonsai
 cowsay
 sl
 tty-clock
 cava
-musikcube
 httpie
 glow
 trippy

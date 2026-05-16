@@ -4,3 +4,5 @@ localsend-bin
 hyprqt6engine
 pinta-git
 bibata-cursor-theme-bin
+cbonsai
+musikcube
