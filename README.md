@@ -271,6 +271,9 @@ Kakku includes modern replacements for common Unix commands while keeping behavi
 | `tty-clock` | Widget | A clean digital clock for the terminal. |
 | `cava` | Audio Visualizer | A highly-customizable audio visualizer for your terminal. |
 | `musikcube` | Media Player | Modern and sleek terminal-based music player for local files. |
+| `httpie` | HTTP Client | User-friendly, colorized command-line HTTP client (modern `curl` alternative). |
+| `glow` | Markdown Viewer | Renders Markdown files beautifully directly in the terminal. |
+| `trippy` | Network Diagnostics | Modern network diagnostic TUI combining `ping` and `traceroute`. |
 
 Configured shell behavior:
 

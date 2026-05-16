@@ -36,3 +36,6 @@ sl
 tty-clock
 cava
 musikcube
+httpie
+glow
+trippy
