@@ -33,7 +33,6 @@ kakku/
       media.txt
   dotfiles/
     niri/
-    alacritty/
     yazi/
     lazygit/
     fastfetch/
@@ -143,7 +142,7 @@ KakkuOS relies on CachyOS for:
 KakkuOS owns:
 
 - default package selection
-- niri, DankMaterialShell, Alacritty, Fastfetch, and Zsh defaults
+- niri, DankMaterialShell, Ghostty, Fastfetch, and Zsh defaults
 - KakkuOS branding
 - user-facing desktop defaults
 - Kakku packaging and a future ISO image
@@ -175,15 +174,29 @@ These packages provide the Wayland desktop session and its core user interface.
 | `xdg-utils` | Basic desktop integration commands for opening files, URLs, and default apps. |
 | `xdg-user-dirs` | Creates standard user folders like Downloads, Documents, Pictures, and Videos. |
 | `matugen` | Wallpaper-based Material color generation used by DMS. |
+| `qt6-multimedia` | Qt multimedia libraries used by DMS sound and media components. |
 | `qt6-multimedia-ffmpeg` | Qt multimedia backend used by DMS media components. |
-| `alacritty` | GPU-accelerated terminal emulator. |
+| `wtype` | Wayland typing helper used by DMS clipboard and plugin paste actions. |
+| `power-profiles-daemon` | Power profile backend used by DMS settings and quick controls. |
+| `i2c-tools` | External display brightness support used by DMS brightness controls. |
+| `libqalculate` | `qalc` engine for the DMS Calculator plugin. |
+| `ghostty` | GPU-accelerated terminal emulator. |
 | `dolphin` | Graphical file manager. |
 | `zen-browser-bin` | Default Firefox-based web browser. |
 | `firefox` | Firefox browser, kept as a fallback for web links if Zen is unavailable. |
 | `google-chrome` | Google Chrome from the AUR, installed by the default AUR package list. |
 | `discord` | Voice and chat client for communities, gaming, and development groups. |
 
-Kakku configures greetd to launch `niri-session`; niri starts `xwayland-satellite` and the DMS user service from `~/.config/niri/config.kdl`.
+Kakku installs DMS through the repository package `dms-shell-niri`. That split package pulls in the base `dms-shell` package and provides the niri compositor integration. Kakku configures greetd to launch `niri-session`; niri starts `xwayland-satellite` and starts the DMS user service from `~/.config/niri/config.kdl`. The install script also tries to add `dms.service` to `niri.service` for the current user when a user systemd manager is available.
+
+The install script also runs `kakku-dms-plugins --no-restart`, which installs or updates these DMS plugins under `~/.config/DankMaterialShell/plugins/`:
+
+| Plugin | Install directory | Source |
+|---|---|---|
+| AI Assistant | `AIAssistant` | `https://github.com/devnullvoid/dms-ai-assistant` |
+| Calculator | `Calculator` | `https://github.com/rochacbruno/DankCalculator` |
+
+Run `kakku dms-plugins` later to update both plugin checkouts and restart DMS.
 
 ### Audio, Network, And Devices
 
@@ -200,7 +213,7 @@ These packages cover common laptop and desktop hardware needs.
 | `tailscale` | WireGuard-based private mesh VPN for connecting personal machines and servers. |
 | `proton-vpn-gtk-app` | Proton VPN graphical client. |
 
-The installer enables `NetworkManager`, `bluetooth`, `docker`, and `tailscaled` when available.
+The installer enables `NetworkManager`, `bluetooth`, `docker`, `tailscaled`, and `power-profiles-daemon` when available.
 
 ### Shell And Prompt
 
@@ -225,6 +238,7 @@ Kakku includes modern replacements for common Unix commands while keeping behavi
 | `fzf` | Shell selection UI | Fuzzy file, directory, and history selection. Kakku configures it to use `fd`. |
 | `jq` | JSON inspection/editing | Essential command-line tool for reading and transforming JSON. |
 | `sd` | `sed` for simple replacements | Clearer command-line find/replace. |
+| `curl` | HTTP client | Required by DMS AI Assistant and useful for API/debug workflows. |
 | `duf` | `df` | Easier disk usage overview. |
 | `dust` | `du` | Easier directory size inspection. |
 | `procs` | `ps` | More readable process listing. |
@@ -282,7 +296,7 @@ Configured shell behavior:
 | `noto-fonts` | Broad default text font coverage. |
 | `noto-fonts-cjk` | Chinese, Japanese, and Korean text support. |
 | `noto-fonts-emoji` | Emoji rendering support. |
-| `ttf-jetbrains-mono-nerd` | Terminal font with developer icons for Alacritty, Starship, DMS, and `eza`. |
+| `ttf-jetbrains-mono-nerd` | Terminal font with developer icons for Ghostty, Starship, DMS, and `eza`. |
 
 ### Gaming
 
@@ -349,10 +363,12 @@ These packages make the default install useful for media playback, screen record
 
 | Keybinding | Action |
 |---|---|
-| `Super+Enter` / `Super+T` | Open Alacritty terminal. |
+| `Super+Enter` / `Super+T` | Open Ghostty terminal. |
 | `Super+Space` / `Super+D` | Open DMS Spotlight launcher. |
 | `Super+E` | Open Dolphin. |
-| `Super+Shift+E` | Open Yazi in Alacritty. |
+| `Super+Shift+E` | Open Yazi in Ghostty. |
+| `Super+A` | Toggle DMS AI Assistant. |
+| `Super+Shift+C` | Open DMS Spotlight with Calculator prefix. |
 | `Super+Q` | Close active window. |
 | `Super+Shift+Q` | Exit niri. |
 | `Super+Shift+T` | Toggle floating. |
@@ -439,6 +455,30 @@ After the packages are published in a repository, a full desktop install becomes
 ```bash
 sudo pacman -S kakku-desktop
 ```
+
+## Phase 4: Build A KakkuOS ISO
+
+KakkuOS ISO work should use CachyOS' live ISO tooling instead of maintaining a separate ArchISO stack.
+
+The scaffold is under:
+
+```bash
+iso/
+```
+
+Prepare a CachyOS-Live-ISO checkout with the KakkuOS overlay staged:
+
+```bash
+iso/build-kakku-iso.sh --prepare-only
+```
+
+Build through CachyOS' `buildiso.sh`:
+
+```bash
+iso/build-kakku-iso.sh
+```
+
+This is not a finished release pipeline yet. The scaffold builds a temporary local package repo for `kakku-niri-settings` and `kakku-desktop`, injects it into the CachyOS live tree, removes the CachyOS GUI installer packages, adds `kakku-desktop` and `cachyos-cli-installer-new` to the ISO package list, and creates a `kakku-install` command for the live environment. The next ISO milestone is wiring the CLI installer profile so installed systems select KakkuOS defaults directly.
 
 ## License
 

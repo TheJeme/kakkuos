@@ -8,6 +8,7 @@ fd
 fzf
 jq
 sd
+curl
 duf
 dust
 procs

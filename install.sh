@@ -177,10 +177,28 @@ install_aur_packages() {
 
 install_aur_packages
 
+configure_dms_user_service() {
+  if ! command -v systemctl >/dev/null 2>&1; then
+    return
+  fi
+
+  if ! systemctl --user list-unit-files dms.service >/dev/null 2>&1; then
+    echo "Warning: dms.service is not visible to the current user systemd manager." >&2
+    echo "DMS is still started by niri from ~/.config/niri/config.kdl when the session opens." >&2
+    return
+  fi
+
+  if systemctl --user add-wants niri.service dms.service >/dev/null 2>&1; then
+    echo "Configured DMS user service for niri.service."
+  else
+    echo "Warning: could not enable dms.service for niri.service in the current user session." >&2
+    echo "DMS is still started by niri from ~/.config/niri/config.kdl when the session opens." >&2
+  fi
+}
+
 mkdir -p "$HOME/.config"
 
 copy_config_dir niri
-copy_config_dir alacritty
 copy_config_dir fastfetch
 copy_config_dir lazygit
 copy_config_dir yazi
@@ -217,6 +235,10 @@ if [[ -x "$REPO_DIR/bin/kakku-zen-policies" ]]; then
   KAKKU_ZEN_POLICIES_SOURCE="$REPO_DIR/system/zen/policies.json" "$REPO_DIR/bin/kakku-zen-policies" || true
 fi
 
+if [[ "${KAKKU_INSTALL_DMS_PLUGINS:-1}" == "1" && -x "$REPO_DIR/bin/kakku-dms-plugins" ]]; then
+  "$REPO_DIR/bin/kakku-dms-plugins" --no-restart || true
+fi
+
 if command -v kakku-disable-plymouth >/dev/null 2>&1; then
   sudo kakku-disable-plymouth
 fi
@@ -247,6 +269,7 @@ sudo systemctl enable NetworkManager || true
 sudo systemctl enable bluetooth || true
 sudo systemctl enable docker || true
 sudo systemctl enable tailscaled || true
+sudo systemctl enable power-profiles-daemon || true
 sudo usermod -aG docker "$USER" || true
 
 # Set up greetd as login manager
@@ -254,9 +277,7 @@ sudo install -Dm644 "$REPO_DIR/system/greetd/config.toml" /etc/greetd/config.tom
 sudo systemctl disable sddm.service 2>/dev/null || true
 sudo systemctl enable greetd.service || true
 
-if command -v systemctl >/dev/null 2>&1; then
-  systemctl --user add-wants niri.service dms.service >/dev/null 2>&1 || true
-fi
+configure_dms_user_service
 
 # Override os-release with KakkuOS branding
 if [[ -f "$REPO_DIR/system/os-release" ]]; then

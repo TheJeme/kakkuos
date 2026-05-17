@@ -16,6 +16,7 @@ Usage:
   kakku packages
   kakku update
   kakku defaults
+  kakku dms-plugins
   kakku disable-plymouth
   kakku version
 EOF
@@ -71,7 +72,7 @@ show_service_status() {
 }
 
 show_services() {
-  for service in NetworkManager bluetooth docker tailscaled; do
+  for service in NetworkManager bluetooth docker tailscaled power-profiles-daemon; do
     show_service_status "$service"
   done
 }
@@ -81,8 +82,10 @@ show_keybinds() {
 KakkuOS keybindings:
   Super+Enter       Open terminal
   Super+Space/D     Open app launcher
+  Super+A           Toggle AI Assistant
   Super+E           Open file manager
   Super+Shift+E     Open Yazi in terminal
+  Super+Shift+C     Open Calculator query
   Super+Q           Close active window
   Super+Shift+Q     Exit niri
   Super+Shift+T     Toggle floating
@@ -133,7 +136,6 @@ Kakku paths:
   Config home:        $CONFIG_HOME
   niri config:        $CONFIG_HOME/niri
   DMS config:         $CONFIG_HOME/DankMaterialShell
-  Alacritty config:  $CONFIG_HOME/alacritty
   Shared files:       $KAKKU_SHARE
   Backgrounds:        /usr/share/backgrounds/kakku
 EOF
@@ -156,18 +158,18 @@ show_packages() {
 run_doctor() {
   local failed=0
 
-  for command_name in niri dms xwayland-satellite alacritty playerctl kakku yazi btop; do
+  for command_name in niri dms xwayland-satellite ghostty playerctl kakku yazi btop; do
     check_command "$command_name" || failed=1
   done
 
   check_path "$CONFIG_HOME/niri/config.kdl" || failed=1
-  check_path "$CONFIG_HOME/alacritty/alacritty.toml" || failed=1
   check_path "/usr/share/backgrounds/kakku/wallpaper.png" || failed=1
 
   check_service_enabled NetworkManager
   check_service_enabled bluetooth
   check_service_enabled docker
   check_service_enabled tailscaled
+  check_service_enabled power-profiles-daemon
 
   if (( failed )); then
     echo
@@ -232,6 +234,9 @@ case "${1:-help}" in
     ;;
   defaults)
     kakku-defaults
+    ;;
+  dms-plugins)
+    kakku-dms-plugins
     ;;
   disable-plymouth)
     sudo kakku-disable-plymouth

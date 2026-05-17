@@ -6,8 +6,13 @@ xdg-utils
 xdg-user-dirs
 dms-shell-niri
 matugen
+qt6-multimedia
 qt6-multimedia-ffmpeg
-alacritty
+wtype
+power-profiles-daemon
+i2c-tools
+libqalculate
+ghostty
 dolphin
 zen-browser-bin
 firefox

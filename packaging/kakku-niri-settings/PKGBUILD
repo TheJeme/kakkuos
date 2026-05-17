@@ -13,8 +13,15 @@ depends=(
   'xdg-desktop-portal-gtk'
   'dms-shell-niri'
   'matugen'
+  'qt6-multimedia'
   'qt6-multimedia-ffmpeg'
-  'alacritty'
+  'wtype'
+  'power-profiles-daemon'
+  'i2c-tools'
+  'curl'
+  'wl-clipboard'
+  'libqalculate'
+  'ghostty'
   'fastfetch'
   'playerctl'
   'fontconfig'
@@ -32,7 +39,6 @@ package() {
 
   install -dm755 "$pkgdir/etc/skel/.config"
   cp -r "$repo_root/dotfiles/niri" "$pkgdir/etc/skel/.config/niri"
-  cp -r "$repo_root/dotfiles/alacritty" "$pkgdir/etc/skel/.config/alacritty"
   cp -r "$repo_root/dotfiles/fastfetch" "$pkgdir/etc/skel/.config/fastfetch"
   cp -r "$repo_root/dotfiles/lazygit" "$pkgdir/etc/skel/.config/lazygit"
   cp -r "$repo_root/dotfiles/yazi" "$pkgdir/etc/skel/.config/yazi"

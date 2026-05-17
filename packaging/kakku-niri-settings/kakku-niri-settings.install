@@ -3,6 +3,7 @@ post_install() {
   systemctl disable sddm.service 2>/dev/null || true
   systemctl disable ly.service 2>/dev/null || true
   systemctl enable greetd.service 2>/dev/null || true
+  systemctl enable power-profiles-daemon.service 2>/dev/null || true
 
   # Override os-release with KakkuOS branding
   if [ -f /usr/share/kakku/os-release ]; then
@@ -30,7 +31,7 @@ _apply_configs() {
     id "$username" &>/dev/null || continue
 
     # Copy .config directories
-    for dir in niri alacritty fastfetch lazygit yazi btop; do
+    for dir in niri fastfetch lazygit yazi btop; do
       if [ -d "$skel/.config/$dir" ]; then
         mkdir -p "$user_home/.config/$dir"
         cp -r "$skel/.config/$dir/." "$user_home/.config/$dir/"

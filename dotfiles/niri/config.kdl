@@ -69,11 +69,11 @@ window-rule {
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
-    Mod+T hotkey-overlay-title="Open Terminal" { spawn "alacritty"; }
-    Mod+Return hotkey-overlay-title="Open Terminal" { spawn "alacritty"; }
+    Mod+T hotkey-overlay-title="Open Terminal" { spawn "ghostty"; }
+    Mod+Return hotkey-overlay-title="Open Terminal" { spawn "ghostty"; }
     Mod+B hotkey-overlay-title="Open Browser" { spawn "zen-browser"; }
     Mod+E hotkey-overlay-title="Open Files" { spawn "dolphin"; }
-    Mod+Shift+E hotkey-overlay-title="Open Yazi" { spawn "alacritty" "-e" "yazi"; }
+    Mod+Shift+E hotkey-overlay-title="Open Yazi" { spawn "ghostty" "-e" "yazi"; }
 
     Mod+Space hotkey-overlay-title="Application Launcher" { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
     Mod+D hotkey-overlay-title="Application Launcher" { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
@@ -81,6 +81,8 @@ binds {
     Mod+N hotkey-overlay-title="Notifications" { spawn "dms" "ipc" "call" "notifications" "toggle"; }
     Mod+Comma hotkey-overlay-title="Settings" { spawn "dms" "ipc" "call" "settings" "focusOrToggle"; }
     Mod+Y hotkey-overlay-title="Wallpapers" { spawn "dms" "ipc" "call" "dankdash" "wallpaper"; }
+    Mod+A hotkey-overlay-title="AI Assistant" { spawn "dms" "ipc" "call" "plugins" "toggle" "aiAssistant"; }
+    Mod+Shift+C hotkey-overlay-title="Calculator" { spawn "dms" "ipc" "call" "spotlight" "openQuery" "="; }
     Mod+Alt+L hotkey-overlay-title="Lock Screen" { spawn "dms" "ipc" "call" "lock" "lock"; }
 
     Mod+O repeat=false { toggle-overview; }
