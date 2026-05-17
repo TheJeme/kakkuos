@@ -21,6 +21,7 @@ depends=(
   'rofi-wayland'
   'alacritty'
   'dolphin'
+  'zen-browser-bin'
   'firefox'
   'discord'
   'pipewire'

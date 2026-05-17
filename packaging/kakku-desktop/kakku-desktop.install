@@ -1,4 +1,8 @@
 post_install() {
+  if command -v kakku-zen-policies >/dev/null 2>&1; then
+    kakku-zen-policies || true
+  fi
+
   echo ""
   echo "  ╔══════════════════════════════════════════════════════════════╗"
   echo "  ║               Welcome to KakkuOS!                           ║"
@@ -9,6 +13,10 @@ post_install() {
 }
 
 post_upgrade() {
+  if command -v kakku-zen-policies >/dev/null 2>&1; then
+    kakku-zen-policies || true
+  fi
+
   echo ""
   echo "  KakkuOS updated. A reboot is recommended."
   echo ""

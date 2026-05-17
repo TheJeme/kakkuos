@@ -41,7 +41,7 @@ set_default_from_candidates() {
   echo "Skipping missing desktop files: $candidates" >&2
 }
 
-set_default firefox.desktop \
+set_default_from_candidates "zen.desktop zen-browser.desktop app.zen_browser.zen.desktop firefox.desktop" \
   text/html \
   x-scheme-handler/http \
   x-scheme-handler/https

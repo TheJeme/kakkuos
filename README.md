@@ -197,7 +197,8 @@ These packages provide the Wayland desktop session and its core user interface.
 | `rofi-wayland` | App launcher and window switcher. |
 | `kitty` | GPU-accelerated terminal emulator. |
 | `dolphin` | Graphical file manager. |
-| `firefox` | Default web browser. |
+| `zen-browser-bin` | Default Firefox-based web browser. |
+| `firefox` | Firefox browser, kept as a fallback for web links if Zen is unavailable. |
 | `google-chrome` | Google Chrome from the AUR, installed by the default AUR package list. |
 | `discord` | Voice and chat client for communities, gaming, and development groups. |
 | `mako` | Notification daemon for Wayland desktops. |
@@ -424,7 +425,9 @@ KakkuOS configures common default applications with:
 kakku defaults
 ```
 
-Defaults include Firefox for web links, Dolphin for directories, mpv for audio/video, Pinta for images, and LibreOffice applications for office documents.
+Defaults include Zen Browser for web links, Dolphin for directories, mpv for audio/video, Pinta for images, and LibreOffice applications for office documents. Firefox remains a web-link fallback if Zen is unavailable.
+
+Zen Browser is configured with a policy file that force-installs uBlock Origin, Dark Reader, and SponsorBlock from Mozilla Add-ons.
 
 ## Themes
 

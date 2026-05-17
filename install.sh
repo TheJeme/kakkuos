@@ -207,11 +207,24 @@ if [[ -d "$REPO_DIR/themes" ]]; then
   sudo cp -r "$REPO_DIR/themes/." /usr/share/kakku/themes/
 fi
 
+if [[ -d "$REPO_DIR/system/zen" ]]; then
+  sudo install -dm755 /usr/share/kakku/zen
+  sudo cp -r "$REPO_DIR/system/zen/." /usr/share/kakku/zen/
+fi
+
 if [[ -d "$REPO_DIR/bin" ]]; then
   for script in "$REPO_DIR"/bin/kakku*; do
     [[ -f "$script" ]] || continue
     sudo install -Dm755 "$script" "/usr/bin/$(basename "$script")"
   done
+fi
+
+if [[ -f "$REPO_DIR/system/pacman.d/hooks/kakku-zen-policies.hook" ]]; then
+  sudo install -Dm644 "$REPO_DIR/system/pacman.d/hooks/kakku-zen-policies.hook" /usr/share/libalpm/hooks/kakku-zen-policies.hook
+fi
+
+if [[ -x "$REPO_DIR/bin/kakku-zen-policies" ]]; then
+  KAKKU_ZEN_POLICIES_SOURCE="$REPO_DIR/system/zen/policies.json" "$REPO_DIR/bin/kakku-zen-policies" || true
 fi
 
 if command -v kakku-disable-plymouth >/dev/null 2>&1; then
