@@ -262,10 +262,12 @@ if [[ -f "$HOME/.config/autostart/cachyos-hello.desktop" ]]; then
   rm -f "$HOME/.config/autostart/cachyos-hello.desktop"
 fi
 
+copy_file_if_changed "$REPO_DIR/dotfiles/bash/.bashrc" "$HOME/.bashrc"
 copy_file_if_changed "$REPO_DIR/dotfiles/zsh/.zshrc" "$HOME/.zshrc"
+copy_config_dir fish
 
-if command -v zsh >/dev/null 2>&1; then
-  chsh -s /usr/bin/zsh "$USER" || true
+if command -v fish >/dev/null 2>&1; then
+  chsh -s /usr/bin/fish "$USER" || true
 fi
 
 if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then

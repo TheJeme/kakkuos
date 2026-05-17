@@ -1,4 +1,5 @@
 zsh
+fish
 starship
 zoxide
 eza
