@@ -1,0 +1,12 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = zen-browser-bin
+Target = zen-browser
+Target = firefox
+
+[Action]
+Description = Reapplying KakkuOS browser extension policies...
+When = PostTransaction
+Exec = /usr/bin/kakku-browser-policies

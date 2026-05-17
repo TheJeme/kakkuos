@@ -52,8 +52,8 @@ package() {
   install -dm755 "$pkgdir/usr/share/kakku/packages"
   cp -r "$repo_root/packages/." "$pkgdir/usr/share/kakku/packages/"
 
-  install -dm755 "$pkgdir/usr/share/kakku/zen"
-  cp -r "$repo_root/system/zen/." "$pkgdir/usr/share/kakku/zen/"
+  install -dm755 "$pkgdir/usr/share/kakku/browser"
+  cp -r "$repo_root/system/browser/." "$pkgdir/usr/share/kakku/browser/"
 
   install -dm755 "$pkgdir/usr/share/kakku/dms"
   cp -r "$repo_root/system/dms/." "$pkgdir/usr/share/kakku/dms/"
@@ -61,7 +61,7 @@ package() {
   install -dm755 "$pkgdir/usr/bin"
   install -m755 "$repo_root"/bin/kakku* "$pkgdir/usr/bin/"
 
-  install -Dm644 "$repo_root/system/pacman.d/hooks/kakku-zen-policies.hook" "$pkgdir/usr/share/libalpm/hooks/kakku-zen-policies.hook"
+  install -Dm644 "$repo_root/system/pacman.d/hooks/kakku-browser-policies.hook" "$pkgdir/usr/share/libalpm/hooks/kakku-browser-policies.hook"
 
   install -Dm644 "$repo_root/system/environment.d/kakku.conf" "$pkgdir/etc/environment.d/kakku.conf"
 

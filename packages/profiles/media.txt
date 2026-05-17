@@ -1,4 +1,5 @@
 mpv
+imv
 ffmpegthumbnailer
 obs-studio
 kdenlive

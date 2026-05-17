@@ -57,10 +57,12 @@ set_default mpv.desktop \
   audio/flac \
   audio/ogg
 
-set_default_from_candidates "com.github.PintaProject.Pinta.desktop org.pinta_project.Pinta.desktop pinta.desktop" \
+set_default_from_candidates "imv.desktop org.gnome.Loupe.desktop feh.desktop com.github.PintaProject.Pinta.desktop org.pinta_project.Pinta.desktop pinta.desktop" \
   image/png \
   image/jpeg \
-  image/webp
+  image/webp \
+  image/gif \
+  image/svg+xml
 
 set_default libreoffice-writer.desktop \
   application/vnd.oasis.opendocument.text \

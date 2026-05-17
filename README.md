@@ -38,6 +38,7 @@ KakkuOS uses the following components:
 ```text
 kakku/
   install.sh
+  wallpapers/
   packages/
     aur.txt
     pacman.txt
@@ -218,7 +219,7 @@ These packages provide the Wayland desktop session and its core user interface.
 | `google-chrome` | Google Chrome from the AUR, installed by the default AUR package list. |
 | `vesktop` | Custom Discord client for communities, gaming, and development groups. |
 
-Kakku installs DMS through the repository package `dms-shell-niri`. That split package pulls in the base `dms-shell` package and provides the niri compositor integration. Kakku configures greetd to launch `niri-session`; niri starts `xwayland-satellite` and starts the DMS user service from `~/.config/niri/config.kdl`. The install script also tries to add `dms.service` to `niri.service` for the current user when a user systemd manager is available.
+Kakku installs DMS through the repository package `dms-shell-niri`. That split package pulls in the base `dms-shell` package and provides the niri compositor integration. Kakku configures greetd to launch `niri-session`; niri starts `xwayland-satellite` and starts the DMS user service from `~/.config/niri/config.kdl`.
 
 The install script also runs `kakku-dms-plugins --no-restart`, which installs or updates these DMS plugins under `~/.config/DankMaterialShell/plugins/`:
 
@@ -360,6 +361,7 @@ These packages make the default install useful for media playback, screen record
 | Package | Purpose |
 |---|---|
 | `mpv` | Lightweight, high-quality media player. |
+| `imv` | Keyboard-driven image viewer for Wayland. |
 | `ffmpegthumbnailer` | Video thumbnail generation for file previews. |
 | `obs-studio` | Screen recording and streaming. |
 | `kdenlive` | Non-linear video editor. |

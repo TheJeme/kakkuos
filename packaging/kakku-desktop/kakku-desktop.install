@@ -1,6 +1,6 @@
 post_install() {
-  if command -v kakku-zen-policies >/dev/null 2>&1; then
-    kakku-zen-policies || true
+  if command -v kakku-browser-policies >/dev/null 2>&1; then
+    kakku-browser-policies || true
   fi
 
   echo ""
@@ -13,8 +13,8 @@ post_install() {
 }
 
 post_upgrade() {
-  if command -v kakku-zen-policies >/dev/null 2>&1; then
-    kakku-zen-policies || true
+  if command -v kakku-browser-policies >/dev/null 2>&1; then
+    kakku-browser-policies || true
   fi
 
   echo ""

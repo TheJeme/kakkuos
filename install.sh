@@ -183,25 +183,6 @@ install_aur_packages() {
 
 install_aur_packages
 
-configure_dms_user_service() {
-  if ! command -v systemctl >/dev/null 2>&1; then
-    return
-  fi
-
-  if ! systemctl --user list-unit-files dms.service >/dev/null 2>&1; then
-    echo "Warning: dms.service is not visible to the current user systemd manager." >&2
-    echo "DMS is still started by niri from ~/.config/niri/config.kdl when the session opens." >&2
-    return
-  fi
-
-  if systemctl --user add-wants niri.service dms.service >/dev/null 2>&1; then
-    echo "Configured DMS user service for niri.service."
-  else
-    echo "Warning: could not enable dms.service for niri.service in the current user session." >&2
-    echo "DMS is still started by niri from ~/.config/niri/config.kdl when the session opens." >&2
-  fi
-}
-
 mkdir -p "$HOME/.config"
 
 copy_config_dir niri
@@ -215,15 +196,21 @@ if command -v xdg-user-dirs-update >/dev/null 2>&1; then
 fi
 
 mkdir -p "$HOME/Pictures/Screenshots"
+mkdir -p "$HOME/Pictures/Wallpapers"
+
+if [[ -d "$REPO_DIR/wallpapers" ]]; then
+  cp -a "$REPO_DIR/wallpapers/." "$HOME/Pictures/Wallpapers/"
+  echo "Installed: Wallpapers to ~/Pictures/Wallpapers"
+fi
 
 if [[ -d "$REPO_DIR/branding" ]]; then
   sudo install -dm755 /usr/share/backgrounds/kakku
   sudo cp -r "$REPO_DIR/branding/." /usr/share/backgrounds/kakku/
 fi
 
-if [[ -d "$REPO_DIR/system/zen" ]]; then
-  sudo install -dm755 /usr/share/kakku/zen
-  sudo cp -r "$REPO_DIR/system/zen/." /usr/share/kakku/zen/
+if [[ -d "$REPO_DIR/system/browser" ]]; then
+  sudo install -dm755 /usr/share/kakku/browser
+  sudo cp -r "$REPO_DIR/system/browser/." /usr/share/kakku/browser/
 fi
 
 if [[ -d "$REPO_DIR/system/dms" ]]; then
@@ -238,12 +225,12 @@ if [[ -d "$REPO_DIR/bin" ]]; then
   done
 fi
 
-if [[ -f "$REPO_DIR/system/pacman.d/hooks/kakku-zen-policies.hook" ]]; then
-  sudo install -Dm644 "$REPO_DIR/system/pacman.d/hooks/kakku-zen-policies.hook" /usr/share/libalpm/hooks/kakku-zen-policies.hook
+if [[ -f "$REPO_DIR/system/pacman.d/hooks/kakku-browser-policies.hook" ]]; then
+  sudo install -Dm644 "$REPO_DIR/system/pacman.d/hooks/kakku-browser-policies.hook" /usr/share/libalpm/hooks/kakku-browser-policies.hook
 fi
 
-if [[ -x "$REPO_DIR/bin/kakku-zen-policies" ]]; then
-  KAKKU_ZEN_POLICIES_SOURCE="$REPO_DIR/system/zen/policies.json" "$REPO_DIR/bin/kakku-zen-policies" || true
+if [[ -x "$REPO_DIR/bin/kakku-browser-policies" ]]; then
+  KAKKU_BROWSER_POLICIES_SOURCE="$REPO_DIR/system/browser/policies.json" "$REPO_DIR/bin/kakku-browser-policies" || true
 fi
 
 if [[ "${KAKKU_INSTALL_DMS_PLUGINS:-1}" == "1" && -x "$REPO_DIR/bin/kakku-dms-plugins" ]]; then
@@ -291,8 +278,6 @@ if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
   sudo systemctl disable sddm.service 2>/dev/null || true
   sudo systemctl enable greetd.service || true
 
-  configure_dms_user_service
-
   # Override os-release with KakkuOS branding
   if [[ -f "$REPO_DIR/system/os-release" ]]; then
     sudo cp "$REPO_DIR/system/os-release" /usr/lib/os-release
@@ -307,7 +292,7 @@ else
 fi
 
 echo ""
-echo "  ╔══════════════════════════════════════════════════════════════╗"
+echo "  ╔═════════════════════════════════════════════════╗"
 echo "  ║               Kakku setup complete!             ║"
 echo "  ║                                                 ║"
 echo "  ║  A reboot is recommended to apply all changes.  ║"
