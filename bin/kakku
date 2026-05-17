@@ -3,6 +3,7 @@ set -euo pipefail
 
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 KAKKU_SHARE="${KAKKU_SHARE:-/usr/share/kakku}"
+KAKKU_BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
   cat <<'EOF'
@@ -33,6 +34,17 @@ check_command() {
   else
     echo "miss command: $command_name"
     return 1
+  fi
+}
+
+run_kakku_helper() {
+  local helper="$1"
+  shift
+
+  if [[ -x "$KAKKU_BIN_DIR/$helper" ]]; then
+    "$KAKKU_BIN_DIR/$helper" "$@"
+  else
+    "$helper" "$@"
   fi
 }
 
@@ -268,7 +280,7 @@ fix_missing_user_configs() {
 
 fix_defaults() {
   if has_command kakku-defaults; then
-    kakku-defaults
+    run_kakku_helper kakku-defaults
   else
     echo "warn kakku-defaults is missing"
   fi
@@ -276,7 +288,7 @@ fix_defaults() {
 
 fix_browser_policies() {
   if has_command kakku-browser-policies; then
-    kakku-browser-policies
+    run_kakku_helper kakku-browser-policies
   else
     echo "warn kakku-browser-policies is missing"
   fi
@@ -284,7 +296,7 @@ fix_browser_policies() {
 
 fix_dms_plugins() {
   if has_command kakku-dms-plugins; then
-    kakku-dms-plugins --no-restart
+    run_kakku_helper kakku-dms-plugins --no-restart
   else
     echo "warn kakku-dms-plugins is missing"
   fi
@@ -465,7 +477,7 @@ run_doctor_fix() {
 run_doctor_checks() {
   local failed=0
 
-  for command_name in niri dms xwayland-satellite ghostty playerctl kakku kakku-defaults kakku-browser-policies kakku-dms-plugins yazi btop fish zathura nvim; do
+  for command_name in niri dms xwayland-satellite ghostty playerctl kakku kakku-defaults kakku-browser-policies kakku-dms-plugins yazi btop fish zathura nvim codex; do
     check_command "$command_name" || failed=1
   done
 
@@ -588,10 +600,10 @@ case "${1:-help}" in
     run_update
     ;;
   defaults)
-    kakku-defaults
+    run_kakku_helper kakku-defaults
     ;;
   dms-plugins)
-    kakku-dms-plugins
+    run_kakku_helper kakku-dms-plugins
     ;;
   version)
     echo "KakkuOS 0.1.0"

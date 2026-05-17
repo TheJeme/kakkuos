@@ -105,6 +105,7 @@ depends=(
   'nodejs'
   'npm'
   'pnpm'
+  'openai-codex'
   'neovim'
   'lazygit'
   'lazydocker'

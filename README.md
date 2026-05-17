@@ -388,6 +388,7 @@ These packages make the default install useful for media playback, screen record
 | `lazygit` | Terminal UI for Git repositories. |
 | `lazydocker` | Terminal UI for Docker containers, images, volumes, and logs. |
 | `git-delta` | Better Git diff viewer used by the Lazygit config. |
+| `openai-codex` | OpenAI Codex CLI |
 | `tmux` | Terminal multiplexer for persistent shell sessions, panes, and remote work. |
 | `yazi` | Fast terminal file manager. Kakku keeps Dolphin as the graphical file manager and uses Yazi for terminal workflows. |
 | `visual-studio-code-bin` | Visual Studio Code from the AUR. Kept in `packages/aur.txt` because it is not a normal repo package. |
