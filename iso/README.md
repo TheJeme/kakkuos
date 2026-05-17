@@ -55,6 +55,12 @@ The script keeps backups of CachyOS files it mutates under
 makes repeated `--prepare-only` runs deterministic while still using the
 upstream checkout as the base.
 
+The overlay also rewrites user-facing live ISO branding: live `os-release`,
+hostname, release marker, boot menu labels, ISO publisher/application metadata,
+MOTD, and generated ISO output naming. CachyOS repository names, mirror files,
+kernel package names, and installer package names remain unchanged because they
+are functional package infrastructure rather than user-facing KakkuOS branding.
+
 If `packaging/repo` has already been built, use:
 
 ```bash
@@ -86,7 +92,6 @@ Still needed:
 
 - move from the temporary file-based local package repo to a hosted KakkuOS repo
 - make the CLI installer expose KakkuOS as a first-class desktop choice instead of using a post-install hook
-- rename ISO output and boot menu branding from CachyOS desktop to KakkuOS
 - VM-test boot, install, first boot, greetd, niri, DMS, and Zen policies
 
 Until those are done, the ISO build is useful for integration work and live

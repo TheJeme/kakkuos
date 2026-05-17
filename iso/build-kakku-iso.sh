@@ -272,6 +272,176 @@ ExecStart=-/usr/bin/agetty --autologin liveuser --noclear %I $TERM
 EOF
 }
 
+replace_in_file() {
+  local file="$1"
+  shift
+
+  [[ -f "$file" ]] || return 0
+  sed -i "$@" "$file"
+}
+
+apply_text_branding() {
+  local file="$1"
+
+  [[ -f "$file" ]] || return 0
+  replace_in_file "$file" \
+    -e 's/CachyOS/KakkuOS/g' \
+    -e 's/cachyos/kakkuos/g' \
+    -e 's/CACHYOS/KAKKUOS/g'
+}
+
+write_live_identity() {
+  local airootfs="$1"
+
+  install -m644 "$KAKKU_ROOT/system/os-release" "$airootfs/etc/os-release"
+  install -m644 "$KAKKU_ROOT/system/os-release" "$airootfs/usr/lib/os-release"
+  install -m644 "$KAKKU_ROOT/system/os-release" "$airootfs/usr/share/kakku/os-release"
+
+  printf 'KakkuOS Live\n' > "$airootfs/etc/kakku-release"
+  rm -f "$airootfs/etc/cachyos-release"
+  printf 'kakkuos\n' > "$airootfs/etc/hostname"
+}
+
+brand_boot_entries() {
+  local archiso_dir="$1"
+
+  apply_text_branding "$archiso_dir/grub/grub.cfg"
+  apply_text_branding "$archiso_dir/grub/loopback.cfg"
+  apply_text_branding "$archiso_dir/efiboot/loader/loader.conf"
+  apply_text_branding "$archiso_dir/efiboot/loader/entries/01-archiso-linux.conf"
+  apply_text_branding "$archiso_dir/efiboot/loader/entries/02-archiso-linux-cachyos.conf"
+  apply_text_branding "$archiso_dir/efiboot/loader/entries/fallback.conf"
+  apply_text_branding "$archiso_dir/syslinux/archiso_head.cfg"
+  apply_text_branding "$archiso_dir/syslinux/archiso_pxe-linux.cfg"
+  apply_text_branding "$archiso_dir/syslinux/archiso_pxe.cfg"
+  apply_text_branding "$archiso_dir/syslinux/archiso_sys-linux.cfg"
+  apply_text_branding "$archiso_dir/syslinux/archiso_sys.cfg"
+  apply_text_branding "$archiso_dir/syslinux/archiso_tail.cfg"
+  apply_text_branding "$archiso_dir/syslinux/syslinux.cfg"
+}
+
+brand_profile_definition() {
+  local profiledef="$1"
+
+  [[ -f "$profiledef" ]] || return 0
+  replace_in_file "$profiledef" \
+    -e 's/^iso_label=.*/iso_label="KAKKU_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"/' \
+    -e 's/^iso_publisher=.*/iso_publisher="KakkuOS <https:\/\/kakkuos.jeme.app\/>"/' \
+    -e 's/^iso_application=.*/iso_application="KakkuOS Live\/Rescue ISO"/'
+}
+
+patch_cachyos_build_helpers() {
+  local live_iso_dir="$1"
+  local util_iso="$live_iso_dir/util-iso.sh"
+
+  [[ -f "$util_iso" ]] || return 0
+
+  cat >> "$util_iso" <<'EOF'
+
+# KakkuOS live ISO branding override. Appended by iso/build-kakku-iso.sh.
+generate_motd() {
+    cat << 'MOTD' > ${src_dir}/archiso/airootfs/etc/motd
+KakkuOS live environment
+
+This ISO is based on CachyOS live ISO tooling and installs KakkuOS.
+Run kakku-install to start the CLI installer.
+
+KakkuOS sources:
+https://github.com/TheJeme/kakkuos
+
+Upstream CachyOS Live ISO sources:
+https://github.com/CachyOS/CachyOS-Live-ISO
+MOTD
+}
+
+gen_iso_fn() {
+    local vars=() name
+    vars+=("kakkuos")
+    [[ -n ${profile} ]] && vars+=("${profile}")
+    vars+=("linux")
+    vars+=("$(date +%y%m%d)")
+
+    for n in ${vars[@]}; do
+        name=${name:-}${name:+-}${n}
+    done
+
+    echo $name
+}
+EOF
+}
+
+remember_branding_files() {
+  local archiso_dir="$1"
+  local airootfs="$2"
+  local file
+  local files=(
+    "$airootfs/etc/os-release"
+    "$airootfs/usr/lib/os-release"
+    "$airootfs/etc/cachyos-release"
+    "$airootfs/etc/hostname"
+    "$airootfs/etc/motd"
+    "$archiso_dir/grub/grub.cfg"
+    "$archiso_dir/grub/loopback.cfg"
+    "$archiso_dir/efiboot/loader/loader.conf"
+    "$archiso_dir/efiboot/loader/entries/01-archiso-linux.conf"
+    "$archiso_dir/efiboot/loader/entries/02-archiso-linux-cachyos.conf"
+    "$archiso_dir/efiboot/loader/entries/fallback.conf"
+    "$archiso_dir/syslinux/archiso_head.cfg"
+    "$archiso_dir/syslinux/archiso_pxe-linux.cfg"
+    "$archiso_dir/syslinux/archiso_pxe.cfg"
+    "$archiso_dir/syslinux/archiso_sys-linux.cfg"
+    "$archiso_dir/syslinux/archiso_sys.cfg"
+    "$archiso_dir/syslinux/archiso_tail.cfg"
+    "$archiso_dir/syslinux/syslinux.cfg"
+    "$archiso_dir/profiledef.sh"
+  )
+
+  for file in "${files[@]}"; do
+    remember_mutable_file "$archiso_dir" "$file"
+  done
+}
+
+restore_branding_files() {
+  local archiso_dir="$1"
+  local airootfs="$2"
+  local file
+  local files=(
+    "$airootfs/etc/os-release"
+    "$airootfs/usr/lib/os-release"
+    "$airootfs/etc/cachyos-release"
+    "$airootfs/etc/hostname"
+    "$airootfs/etc/motd"
+    "$archiso_dir/grub/grub.cfg"
+    "$archiso_dir/grub/loopback.cfg"
+    "$archiso_dir/efiboot/loader/loader.conf"
+    "$archiso_dir/efiboot/loader/entries/01-archiso-linux.conf"
+    "$archiso_dir/efiboot/loader/entries/02-archiso-linux-cachyos.conf"
+    "$archiso_dir/efiboot/loader/entries/fallback.conf"
+    "$archiso_dir/syslinux/archiso_head.cfg"
+    "$archiso_dir/syslinux/archiso_pxe-linux.cfg"
+    "$archiso_dir/syslinux/archiso_pxe.cfg"
+    "$archiso_dir/syslinux/archiso_sys-linux.cfg"
+    "$archiso_dir/syslinux/archiso_sys.cfg"
+    "$archiso_dir/syslinux/archiso_tail.cfg"
+    "$archiso_dir/syslinux/syslinux.cfg"
+    "$archiso_dir/profiledef.sh"
+  )
+
+  for file in "${files[@]}"; do
+    restore_mutable_file "$archiso_dir" "$file"
+  done
+}
+
+apply_iso_branding() {
+  local archiso_dir="$1"
+  local airootfs="$2"
+
+  write_live_identity "$airootfs"
+  brand_boot_entries "$archiso_dir"
+  brand_profile_definition "$archiso_dir/profiledef.sh"
+  patch_cachyos_build_helpers "$CACHYOS_LIVE_ISO_DIR"
+}
+
 install_cli_installer_entrypoint() {
   local airootfs="$1"
 
@@ -413,9 +583,13 @@ stage_kakkuos() {
   remember_mutable_file "$archiso_dir" "$packages_file"
   remember_mutable_file "$archiso_dir" "$archiso_dir/pacman.conf"
   remember_mutable_file "$archiso_dir" "$airootfs/etc/pacman.conf"
+  remember_mutable_file "$archiso_dir" "$CACHYOS_LIVE_ISO_DIR/util-iso.sh"
+  remember_branding_files "$archiso_dir" "$airootfs"
   restore_mutable_file "$archiso_dir" "$packages_file"
   restore_mutable_file "$archiso_dir" "$archiso_dir/pacman.conf"
   restore_mutable_file "$archiso_dir" "$airootfs/etc/pacman.conf"
+  restore_mutable_file "$archiso_dir" "$CACHYOS_LIVE_ISO_DIR/util-iso.sh"
+  restore_branding_files "$archiso_dir" "$airootfs"
 
   mkdir -p "$staged_source"
   rsync -a --delete \
@@ -429,9 +603,9 @@ stage_kakkuos() {
 
   install -Dm644 "$KAKKU_ROOT/branding/wallpaper.png" "$airootfs/usr/share/backgrounds/kakku/wallpaper.png"
   install -Dm644 "$KAKKU_ROOT/branding/logo.png" "$airootfs/usr/share/pixmaps/kakku-logo.png"
-  install -Dm644 "$KAKKU_ROOT/system/os-release" "$airootfs/usr/share/kakku/os-release"
-  install -Dm644 "$KAKKU_ROOT/system/os-release" "$airootfs/usr/lib/os-release"
+  install -dm755 "$airootfs/usr/share/kakku"
 
+  apply_iso_branding "$archiso_dir" "$airootfs"
   inject_local_repo "$archiso_dir" "$airootfs"
   remove_gui_installer_packages "$packages_file"
   append_unique_packages "$packages_file" kakku-desktop "$KAKKU_CLI_INSTALLER_PACKAGE"
