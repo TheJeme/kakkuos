@@ -190,6 +190,7 @@ copy_config_dir fastfetch
 copy_config_dir lazygit
 copy_config_dir yazi
 copy_config_dir btop
+copy_config_dir nvim
 
 if command -v xdg-user-dirs-update >/dev/null 2>&1; then
   xdg-user-dirs-update || true
