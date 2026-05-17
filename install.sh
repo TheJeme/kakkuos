@@ -7,6 +7,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # run interactively. When non-interactive, add `--noconfirm` to pacman/AUR
 # helper flags so the script doesn't pause for user confirmation.
 KAKKU_NONINTERACTIVE="${KAKKU_NONINTERACTIVE:-1}"
+KAKKU_SYSTEM_CONFIG="${KAKKU_SYSTEM_CONFIG:-1}"
 
 # Simple CLI parsing: `--interactive` or `-i` will force interactive mode
 # (script will prompt for pacman/AUR confirmations). Default is non-interactive.
@@ -16,6 +17,7 @@ Usage: $0 [OPTIONS]
 
 Options:
   -i, --interactive   Run interactively (ask for confirmations)
+  --no-system-config  Skip login manager, service, bootloader, and OS branding changes
   -h, --help          Show this help
 EOF
 }
@@ -24,6 +26,10 @@ while [[ "$#" -gt 0 ]]; do
   case "$1" in
     -i|--interactive)
       KAKKU_NONINTERACTIVE=0
+      shift
+      ;;
+    --no-system-config)
+      KAKKU_SYSTEM_CONFIG=0
       shift
       ;;
     -h|--help)
@@ -220,6 +226,11 @@ if [[ -d "$REPO_DIR/system/zen" ]]; then
   sudo cp -r "$REPO_DIR/system/zen/." /usr/share/kakku/zen/
 fi
 
+if [[ -d "$REPO_DIR/system/dms" ]]; then
+  sudo install -dm755 /usr/share/kakku/dms
+  sudo cp -r "$REPO_DIR/system/dms/." /usr/share/kakku/dms/
+fi
+
 if [[ -d "$REPO_DIR/bin" ]]; then
   for script in "$REPO_DIR"/bin/kakku*; do
     [[ -f "$script" ]] || continue
@@ -236,11 +247,7 @@ if [[ -x "$REPO_DIR/bin/kakku-zen-policies" ]]; then
 fi
 
 if [[ "${KAKKU_INSTALL_DMS_PLUGINS:-1}" == "1" && -x "$REPO_DIR/bin/kakku-dms-plugins" ]]; then
-  "$REPO_DIR/bin/kakku-dms-plugins" --no-restart || true
-fi
-
-if command -v kakku-disable-plymouth >/dev/null 2>&1; then
-  sudo kakku-disable-plymouth
+  KAKKU_DMS_PLUGIN_DEFAULTS="$REPO_DIR/system/dms/plugin_settings.defaults.json" "$REPO_DIR/bin/kakku-dms-plugins" --no-restart || true
 fi
 
 if command -v xdg-mime >/dev/null 2>&1 && command -v kakku-defaults >/dev/null 2>&1; then
@@ -255,38 +262,46 @@ if [[ -f "$HOME/.config/autostart/cachyos-hello.desktop" ]]; then
   rm -f "$HOME/.config/autostart/cachyos-hello.desktop"
 fi
 
-if [[ -f "$REPO_DIR/system/environment.d/kakku.conf" ]]; then
-  sudo install -Dm644 "$REPO_DIR/system/environment.d/kakku.conf" /etc/environment.d/kakku.conf
-fi
-
 copy_file_if_changed "$REPO_DIR/dotfiles/zsh/.zshrc" "$HOME/.zshrc"
 
 if command -v zsh >/dev/null 2>&1; then
   chsh -s /usr/bin/zsh "$USER" || true
 fi
 
-sudo systemctl enable NetworkManager || true
-sudo systemctl enable bluetooth || true
-sudo systemctl enable docker || true
-sudo systemctl enable tailscaled || true
-sudo systemctl enable power-profiles-daemon || true
-sudo usermod -aG docker "$USER" || true
+if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
+  if command -v kakku-disable-plymouth >/dev/null 2>&1; then
+    sudo kakku-disable-plymouth
+  fi
 
-# Set up greetd as login manager
-sudo install -Dm644 "$REPO_DIR/system/greetd/config.toml" /etc/greetd/config.toml
-sudo systemctl disable sddm.service 2>/dev/null || true
-sudo systemctl enable greetd.service || true
+  if [[ -f "$REPO_DIR/system/environment.d/kakku.conf" ]]; then
+    sudo install -Dm644 "$REPO_DIR/system/environment.d/kakku.conf" /etc/environment.d/kakku.conf
+  fi
 
-configure_dms_user_service
+  sudo systemctl enable NetworkManager || true
+  sudo systemctl enable bluetooth || true
+  sudo systemctl enable docker || true
+  sudo systemctl enable tailscaled || true
+  sudo systemctl enable power-profiles-daemon || true
+  sudo usermod -aG docker "$USER" || true
 
-# Override os-release with KakkuOS branding
-if [[ -f "$REPO_DIR/system/os-release" ]]; then
-  sudo cp "$REPO_DIR/system/os-release" /usr/lib/os-release
-fi
+  # Set up greetd as login manager
+  sudo install -Dm644 "$REPO_DIR/system/greetd/config.toml" /etc/greetd/config.toml
+  sudo systemctl disable sddm.service 2>/dev/null || true
+  sudo systemctl enable greetd.service || true
 
-# Apply KakkuOS branding to bootloader
-if [[ -x "$REPO_DIR/bin/kakku-brand-bootloader" ]]; then
-  sudo "$REPO_DIR/bin/kakku-brand-bootloader"
+  configure_dms_user_service
+
+  # Override os-release with KakkuOS branding
+  if [[ -f "$REPO_DIR/system/os-release" ]]; then
+    sudo cp "$REPO_DIR/system/os-release" /usr/lib/os-release
+  fi
+
+  # Apply KakkuOS branding to bootloader
+  if [[ -x "$REPO_DIR/bin/kakku-brand-bootloader" ]]; then
+    sudo "$REPO_DIR/bin/kakku-brand-bootloader"
+  fi
+else
+  echo "Skipped KakkuOS system configuration because --no-system-config was set."
 fi
 
 echo ""

@@ -1,0 +1,10 @@
+{
+  "aiAssistant": {
+    "enabled": true
+  },
+  "calculator": {
+    "enabled": true,
+    "trigger": "=",
+    "calcEngine": "qalc"
+  }
+}

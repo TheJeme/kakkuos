@@ -81,6 +81,20 @@ The script installs the package list, copies dotfiles into the current user's ho
 
 The installer is safe to run more than once. Unchanged config files are skipped, changed local config paths are backed up with a timestamp, and package installs use `--needed`.
 
+On an existing CachyOS install, `install.sh` should be treated as a conversion script. It keeps DMS' generated config files user-owned, but it still installs Kakku packages and defaults, backs up replaced Kakku-owned user config directories, switches the login manager to greetd, applies KakkuOS branding, and updates boot/service defaults. Use the default mode only when the intent is to make that install behave like KakkuOS.
+
+For an existing CachyOS + DMS install where you only want the Kakku user-layer defaults and DMS plugins without changing the login manager, bootloader, service defaults, or OS branding, run:
+
+```bash
+./install.sh --no-system-config
+```
+
+For only the default DMS plugins, run:
+
+```bash
+kakku-dms-plugins
+```
+
 ## Default Package Set
 
 KakkuOS uses CachyOS as its system base and ships an opinionated desktop, terminal, gaming, and development package set.
@@ -197,6 +211,8 @@ The install script also runs `kakku-dms-plugins --no-restart`, which installs or
 | Calculator | `Calculator` | `https://github.com/rochacbruno/DankCalculator` |
 
 Run `kakku dms-plugins` later to update both plugin checkouts and restart DMS.
+
+Kakku does not replace DMS' generated `settings.json`, `plugin_settings.json`, cache, or session state. It only merges missing defaults from `/usr/share/kakku/dms/plugin_settings.defaults.json` into `plugin_settings.json`, so first boot gets the Kakku plugin defaults while user changes and DMS-written values remain authoritative after that.
 
 ### Audio, Network, And Devices
 

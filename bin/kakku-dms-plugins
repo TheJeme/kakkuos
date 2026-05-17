@@ -2,6 +2,9 @@
 set -euo pipefail
 
 PLUGIN_DIR="${KAKKU_DMS_PLUGIN_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/DankMaterialShell/plugins}"
+DMS_CONFIG_DIR="${KAKKU_DMS_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/DankMaterialShell}"
+DMS_PLUGIN_SETTINGS="$DMS_CONFIG_DIR/plugin_settings.json"
+DMS_PLUGIN_DEFAULTS="${KAKKU_DMS_PLUGIN_DEFAULTS:-/usr/share/kakku/dms/plugin_settings.defaults.json}"
 RESTART_DMS=1
 
 usage() {
@@ -75,12 +78,46 @@ install_or_update_plugin() {
   git clone --depth 1 "$url" "$target"
 }
 
+merge_plugin_defaults() {
+  local defaults="$DMS_PLUGIN_DEFAULTS"
+  local target="$DMS_PLUGIN_SETTINGS"
+  local tmp
+
+  if [[ ! -f "$defaults" ]]; then
+    return
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "Warning: jq is missing, skipping DMS plugin default settings merge." >&2
+    return
+  fi
+
+  mkdir -p "$DMS_CONFIG_DIR"
+  tmp="$(mktemp)"
+
+  if [[ -f "$target" ]]; then
+    if ! jq -e . "$target" >/dev/null 2>&1; then
+      echo "Warning: $target is not valid JSON, skipping DMS plugin default settings merge." >&2
+      rm -f "$tmp"
+      return
+    fi
+
+    jq -s '.[0] * .[1]' "$defaults" "$target" > "$tmp"
+  else
+    jq . "$defaults" > "$tmp"
+  fi
+
+  mv "$tmp" "$target"
+  echo "Merged DMS plugin defaults into $target."
+}
+
 require_command git
 mkdir -p "$PLUGIN_DIR"
 
 failed=0
 install_or_update_plugin "AIAssistant" "https://github.com/devnullvoid/dms-ai-assistant.git" || failed=1
 install_or_update_plugin "Calculator" "https://github.com/rochacbruno/DankCalculator.git" || failed=1
+merge_plugin_defaults
 
 if (( RESTART_DMS )) && command -v dms >/dev/null 2>&1; then
   dms restart >/dev/null 2>&1 || true

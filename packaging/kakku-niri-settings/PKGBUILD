@@ -55,6 +55,9 @@ package() {
   install -dm755 "$pkgdir/usr/share/kakku/zen"
   cp -r "$repo_root/system/zen/." "$pkgdir/usr/share/kakku/zen/"
 
+  install -dm755 "$pkgdir/usr/share/kakku/dms"
+  cp -r "$repo_root/system/dms/." "$pkgdir/usr/share/kakku/dms/"
+
   install -dm755 "$pkgdir/usr/bin"
   install -m755 "$repo_root"/bin/kakku* "$pkgdir/usr/bin/"
 
