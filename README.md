@@ -149,7 +149,8 @@ Available commands:
 | Command | Purpose |
 |---|---|
 | `kakku info` | Show Kakku, base OS, kernel, and niri/DMS information. |
-| `kakku doctor` | Check expected commands, configs, branding assets, and key services. |
+| `kakku doctor` | Check expected commands, configs, branding assets, defaults, DMS plugins, and key services. |
+| `kakku doctor --fix` | Reapply safe local defaults, restore missing skel configs, refresh DMS plugins, apply browser policies, set fish, and enable core services. |
 | `kakku services` | Show active/enabled state for key services. |
 | `kakku keybinds` | Print KakkuOS default keyboard shortcuts. |
 | `kakku paths` | Show important Kakku config and system paths. |
@@ -463,13 +464,7 @@ Recommended choices:
 
 For KakkuOS, the practical default recommendation is **Limine on Btrfs snapshot installs** and **systemd-boot for simple UEFI installs**.
 
-CachyOS ISOs enable Plymouth by default for the graphical boot splash. The KakkuOS installer disables that splash automatically. The same step can be rerun manually with:
-
-```bash
-kakku disable-plymouth
-```
-
-The helper removes the Plymouth hook from `/etc/mkinitcpio.conf` when present, removes common `splash`/`quiet` boot parameters from supported bootloader config files, rebuilds initramfs with `mkinitcpio -P` only when a boot-related file changed, and leaves `.kakku.bak` backups for edited files. Bootloader changes should still be reviewed carefully because they affect early boot behavior.
+CachyOS ISOs enable Plymouth by default for the graphical boot splash. KakkuOS disables that splash during installation. The internal helper removes the Plymouth hook from `/etc/mkinitcpio.conf` when present, removes common `splash`/`quiet` boot parameters from supported bootloader config files, rebuilds initramfs with `mkinitcpio -P` only when a boot-related file changed, and leaves `.kakku.bak` backups for edited files.
 
 ## Phase 2: Package The Defaults
 

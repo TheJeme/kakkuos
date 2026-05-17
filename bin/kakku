@@ -9,7 +9,7 @@ usage() {
 Usage:
   kakku help
   kakku info
-  kakku doctor
+  kakku doctor [--fix]
   kakku services
   kakku keybinds
   kakku paths
@@ -17,7 +17,6 @@ Usage:
   kakku update
   kakku defaults
   kakku dms-plugins
-  kakku disable-plymouth
   kakku version
 EOF
 }
@@ -219,6 +218,135 @@ check_dms_ipc_bindings() {
   return "$failed"
 }
 
+copy_missing_path() {
+  local source="$1"
+  local target="$2"
+
+  if [[ -e "$target" ]]; then
+    echo "skip exists: $target"
+    return 0
+  fi
+
+  if [[ ! -e "$source" ]]; then
+    echo "warn missing source: $source"
+    return 0
+  fi
+
+  mkdir -p "$(dirname "$target")"
+  cp -a "$source" "$target"
+  echo "fix  installed missing path: $target"
+}
+
+run_fix_step() {
+  local label="$1"
+  shift
+
+  echo "fix  $label"
+  if "$@"; then
+    echo "ok   $label"
+  else
+    echo "warn $label failed"
+  fi
+}
+
+fix_user_dirs() {
+  mkdir -p "$CONFIG_HOME" "$HOME/Pictures/Screenshots" "$HOME/Pictures/Wallpapers"
+  mkdir -p "$CONFIG_HOME/DankMaterialShell/plugins"
+
+  if has_command xdg-user-dirs-update; then
+    xdg-user-dirs-update || true
+  fi
+}
+
+fix_missing_user_configs() {
+  copy_missing_path /etc/skel/.config/niri "$CONFIG_HOME/niri"
+  copy_missing_path /etc/skel/.config/fish "$CONFIG_HOME/fish"
+  copy_missing_path /etc/skel/.zshrc "$HOME/.zshrc"
+  copy_missing_path /etc/skel/.bashrc "$HOME/.bashrc"
+}
+
+fix_defaults() {
+  if has_command kakku-defaults; then
+    kakku-defaults
+  else
+    echo "warn kakku-defaults is missing"
+  fi
+}
+
+fix_browser_policies() {
+  if has_command kakku-browser-policies; then
+    kakku-browser-policies
+  else
+    echo "warn kakku-browser-policies is missing"
+  fi
+}
+
+fix_dms_plugins() {
+  if has_command kakku-dms-plugins; then
+    kakku-dms-plugins --no-restart
+  else
+    echo "warn kakku-dms-plugins is missing"
+  fi
+}
+
+fix_login_shell() {
+  local current_shell=""
+  local fish_path=""
+
+  if has_command fish; then
+    fish_path="$(command -v fish)"
+  else
+    echo "warn fish is missing"
+    return 0
+  fi
+
+  if has_command getent; then
+    current_shell="$(getent passwd "$USER" 2>/dev/null | awk -F: '{print $7}')"
+  fi
+
+  if [[ "$current_shell" == "$fish_path" || "$current_shell" == "/bin/fish" ]]; then
+    return 0
+  fi
+
+  if has_command chsh; then
+    chsh -s "$fish_path" "$USER" || true
+  else
+    echo "warn chsh is missing"
+  fi
+}
+
+system_unit_exists() {
+  local service="$1"
+
+  systemctl list-unit-files "$service" --no-legend 2>/dev/null | grep -q "^$service"
+}
+
+fix_core_services() {
+  local service
+  local sudo_cmd=()
+
+  if ! has_command systemctl; then
+    echo "warn systemctl is missing"
+    return 0
+  fi
+
+  if (( EUID != 0 )); then
+    if ! has_command sudo; then
+      echo "warn sudo is missing"
+      return 0
+    fi
+    sudo_cmd=(sudo)
+  fi
+
+  for service in NetworkManager.service bluetooth.service greetd.service power-profiles-daemon.service; do
+    if system_unit_exists "$service"; then
+      "${sudo_cmd[@]}" systemctl enable "$service" || true
+    else
+      echo "warn service unit missing: $service"
+    fi
+  done
+}
+
 show_service_status() {
   local service="$1"
   local state="unknown"
@@ -316,7 +444,24 @@ show_packages() {
   echo "AUR packages are listed in packages/aur.txt in the Kakku source repo."
 }
 
-run_doctor() {
+run_doctor_fix() {
+  echo "Kakku doctor repair mode"
+  echo
+
+  run_fix_step "create user directories" fix_user_dirs
+  run_fix_step "restore missing user configs from /etc/skel" fix_missing_user_configs
+  run_fix_step "configure default applications" fix_defaults
+  run_fix_step "install browser policies" fix_browser_policies
+  run_fix_step "install or update DMS plugins" fix_dms_plugins
+  run_fix_step "set fish as login shell" fix_login_shell
+  run_fix_step "enable core services" fix_core_services
+
+  echo
+  echo "Repair pass completed. Rechecking..."
+  echo
+}
+
+run_doctor_checks() {
   local failed=0
 
   for command_name in niri dms xwayland-satellite ghostty playerctl kakku kakku-defaults kakku-browser-policies kakku-dms-plugins yazi btop fish zathura; do
@@ -360,6 +505,34 @@ run_doctor() {
   echo "Kakku doctor completed."
 }
 
+run_doctor() {
+  local fix=0
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --fix|fix)
+        fix=1
+        shift
+        ;;
+      -h|--help)
+        usage
+        return 0
+        ;;
+      *)
+        echo "Unknown doctor option: $1" >&2
+        usage >&2
+        exit 1
+        ;;
+    esac
+  done
+
+  if (( fix )); then
+    run_doctor_fix
+  fi
+
+  run_doctor_checks
+}
+
 run_update() {
   if ! has_command sudo || ! has_command pacman; then
     echo "kakku update requires sudo and pacman." >&2
@@ -394,7 +567,8 @@ case "${1:-help}" in
     show_info
     ;;
   doctor)
-    run_doctor
+    shift
+    run_doctor "$@"
     ;;
   services)
     show_services
@@ -416,9 +590,6 @@ case "${1:-help}" in
     ;;
   dms-plugins)
     kakku-dms-plugins
-    ;;
-  disable-plymouth)
-    sudo kakku-disable-plymouth
     ;;
   version)
     echo "KakkuOS 0.1.0"
