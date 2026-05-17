@@ -198,6 +198,7 @@ check_exec "$airootfs/usr/local/bin/kakku-install"
 check_exec "$airootfs/usr/local/bin/kakku-target-install"
 check_file "$airootfs/opt/kakkuos/install.sh"
 check_file "$airootfs/usr/share/backgrounds/kakku/wallpaper.png"
+check_file "$airootfs/usr/share/backgrounds/kakku/wallpapers/kakku-default.png"
 check_file "$airootfs/usr/share/pixmaps/kakku-logo.png"
 
 settings_file="$airootfs/usr/share/kakku/installer/settings.json"

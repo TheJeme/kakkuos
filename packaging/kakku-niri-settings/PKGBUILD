@@ -52,6 +52,10 @@ package() {
 
   install -dm755 "$pkgdir/usr/share/backgrounds/kakku"
   cp -r "$repo_root/branding/." "$pkgdir/usr/share/backgrounds/kakku/"
+  if [[ -d "$repo_root/wallpapers" ]]; then
+    install -dm755 "$pkgdir/usr/share/backgrounds/kakku/wallpapers"
+    cp -r "$repo_root/wallpapers/." "$pkgdir/usr/share/backgrounds/kakku/wallpapers/"
+  fi
 
   install -dm755 "$pkgdir/usr/share/kakku/packages"
   cp -r "$repo_root/packages/." "$pkgdir/usr/share/kakku/packages/"

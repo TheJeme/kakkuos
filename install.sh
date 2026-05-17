@@ -197,16 +197,15 @@ if command -v xdg-user-dirs-update >/dev/null 2>&1; then
 fi
 
 mkdir -p "$HOME/Pictures/Screenshots"
-mkdir -p "$HOME/Pictures/Wallpapers"
-
-if [[ -d "$REPO_DIR/wallpapers" ]]; then
-  cp -a "$REPO_DIR/wallpapers/." "$HOME/Pictures/Wallpapers/"
-  echo "Installed: Wallpapers to ~/Pictures/Wallpapers"
-fi
 
 if [[ -d "$REPO_DIR/branding" ]]; then
   sudo install -dm755 /usr/share/backgrounds/kakku
   sudo cp -r "$REPO_DIR/branding/." /usr/share/backgrounds/kakku/
+fi
+
+if [[ -d "$REPO_DIR/wallpapers" ]]; then
+  sudo install -dm755 /usr/share/backgrounds/kakku/wallpapers
+  sudo cp -r "$REPO_DIR/wallpapers/." /usr/share/backgrounds/kakku/wallpapers/
 fi
 
 if [[ -d "$REPO_DIR/system/browser" ]]; then
