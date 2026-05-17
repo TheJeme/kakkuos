@@ -64,6 +64,16 @@ set_default_from_candidates "imv.desktop org.gnome.Loupe.desktop feh.desktop com
   image/gif \
   image/svg+xml
 
+set_default_from_candidates "org.pwmt.zathura.desktop zathura.desktop zen.desktop zen-browser.desktop app.zen_browser.zen.desktop firefox.desktop" \
+  application/pdf
+
+set_default_from_candidates "code.desktop visual-studio-code.desktop code-oss.desktop nvim.desktop" \
+  text/plain \
+  text/markdown \
+  application/json \
+  text/x-shellscript \
+  text/csv
+
 set_default libreoffice-writer.desktop \
   application/vnd.oasis.opendocument.text \
   application/msword \

@@ -37,7 +37,29 @@ packages from the live package list, and adds `kakku-desktop` plus
 `cachyos-cli-installer-new`.
 
 The live environment gets a `kakku-install` command that launches CachyOS'
-terminal installer (`cachyos-installer`) through `sudo`.
+terminal installer (`cachyos-installer`) through `sudo`. The live image is
+also staged to boot to `multi-user.target` with a TTY installer hint, so the
+installer experience is CLI-first even though the installed system receives the
+KakkuOS niri desktop.
+
+`kakku-install` starts the CachyOS CLI installer from
+`/usr/share/kakku/installer`, where Kakku stages a small `settings.json`.
+That settings file leaves the install interactive, but sets Kakku-friendly
+defaults and registers a post-install hook. After the CLI installer finishes
+the normal CachyOS install flow, that hook copies the ISO's local Kakku package
+repo into the target and installs `kakku-desktop`, so the installed system gets
+the KakkuOS niri/DMS desktop package and service defaults.
+
+The script keeps backups of CachyOS files it mutates under
+`archiso/.kakku-originals/` and restores them before each staging run. This
+makes repeated `--prepare-only` runs deterministic while still using the
+upstream checkout as the base.
+
+If `packaging/repo` has already been built, use:
+
+```bash
+iso/build-kakku-iso.sh --prepare-only --use-existing-local-repo
+```
 
 ## Build
 
@@ -54,7 +76,7 @@ sudo ./buildiso.sh -p desktop -v -w
 inside the cached CachyOS-Live-ISO checkout.
 
 The ISO output is produced by the CachyOS build system under that checkout's
-`out/` directory.
+`out/` directory and copied to `iso/out/` when the build completes.
 
 ## Current Limitations
 
@@ -63,8 +85,8 @@ This is intentionally a scaffold, not the finished release pipeline.
 Still needed:
 
 - move from the temporary file-based local package repo to a hosted KakkuOS repo
-- wire the CLI installer profile so installed systems select KakkuOS defaults directly
-- rename ISO output and live branding from CachyOS desktop to KakkuOS
+- make the CLI installer expose KakkuOS as a first-class desktop choice instead of using a post-install hook
+- rename ISO output and boot menu branding from CachyOS desktop to KakkuOS
 - VM-test boot, install, first boot, greetd, niri, DMS, and Zen policies
 
 Until those are done, the ISO build is useful for integration work and live

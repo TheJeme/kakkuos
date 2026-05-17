@@ -1,5 +1,7 @@
 mpv
 imv
+zathura
+zathura-pdf-mupdf
 ffmpegthumbnailer
 obs-studio
 kdenlive

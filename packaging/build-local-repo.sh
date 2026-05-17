@@ -69,7 +69,7 @@ build_package() {
 
   (
     cd "$package_dir"
-    makepkg -Csf --needed --noconfirm
+    makepkg -Cf --nodeps --noconfirm
   )
   find "$package_dir" -maxdepth 1 -type f -name '*.pkg.tar.*' ! -name '*.sig' -exec cp -f {} "$OUTPUT_DIR/" \;
 }
@@ -78,6 +78,7 @@ require_command makepkg
 require_command repo-add
 
 mkdir -p "$OUTPUT_DIR"
+rm -f "$OUTPUT_DIR"/*.pkg.tar.* "$OUTPUT_DIR/$REPO_NAME".db* "$OUTPUT_DIR/$REPO_NAME".files*
 
 for package_name in "${packages[@]}"; do
   build_package "$package_name"
