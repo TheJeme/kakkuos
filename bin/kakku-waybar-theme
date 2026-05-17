@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
-if command -v kakku-theme >/dev/null 2>&1; then
-  echo "theme $(kakku-theme current)"
-else
-  echo "theme"
-fi
-

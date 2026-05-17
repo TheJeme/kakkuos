@@ -1,9 +1,0 @@
-[general]
-framerate = 60
-bars = 0
-
-[color]
-background = '#fff7f8'
-gradient = 1
-gradient_color_1 = '#e95f7d'
-gradient_color_2 = '#3a2028'

@@ -1,17 +1,20 @@
 # KakkuOS
 
-KakkuOS is a CachyOS-based Hyprland desktop profile. The first goal is a reproducible setup repository that can be applied on top of an installed CachyOS Hyprland system. Later phases package the defaults as Arch packages and use those packages in an ISO profile.
+KakkuOS is a CachyOS-based operating system built around niri and DankMaterialShell. It keeps the CachyOS kernel, repositories, hardware support, and performance-focused base, then defines its own desktop session, package set, branding, default applications, and user-facing system behavior.
 
-## Target Architecture
+The current installer builds KakkuOS from an installed CachyOS system. The target is a packaged KakkuOS desktop stack first, then a dedicated KakkuOS ISO once the package set and defaults are stable.
+
+## System Architecture
 
 KakkuOS is built from:
 
-- CachyOS base
+- CachyOS system base
 - CachyOS repositories
-- Kakku Hyprland configuration
-- Kakku package selection
-- Kakku branding
-- Optional custom installer or ISO profile
+- KakkuOS niri and DankMaterialShell desktop
+- KakkuOS package selection
+- KakkuOS branding
+- KakkuOS default applications and system behavior
+- future KakkuOS installer or ISO image
 
 ## Repository Layout
 
@@ -29,11 +32,8 @@ kakku/
       gaming.txt
       media.txt
   dotfiles/
-    hypr/
-    waybar/
-    rofi/
-    kitty/
-    mako/
+    niri/
+    alacritty/
     yazi/
     lazygit/
     fastfetch/
@@ -42,17 +42,6 @@ kakku/
     pacman.conf.d/
     environment.d/
     systemd/
-  themes/
-    matcha/
-    blueberry/
-    strawberry/
-    funfetti/
-    velvet/
-    caramel/
-    mocha/
-    tiramisu/
-    vanilla/
-    carrot/
   bin/
     kakku
     kakku-*
@@ -64,15 +53,17 @@ kakku/
     wordmark-compact.svg
     fastfetch-logo.txt
   packaging/
-    kakku-hyprland-settings/
+    kakku-niri-settings/
     kakku-desktop/
 ```
 
 ## Install
 
-Install KakkuOS on a CachyOS base.
+Install KakkuOS from a CachyOS base system.
 
-Start with CachyOS Hyprland and run the hosted installer. It clones the KakkuOS repository, runs the project installer, installs packages with `--needed`, copies dotfiles, backs up changed local configs, and enables common services when available.
+Install CachyOS first, then run the KakkuOS installer to convert that system into KakkuOS. Use the CachyOS online installer, pick Niri if the installer offers it, or pick the smallest/minimal graphical option available. Avoid installing multiple desktop environments during the CachyOS install.
+
+After rebooting into the new CachyOS system, run the hosted installer. It clones the KakkuOS repository, runs the project installer, installs packages with `--needed`, copies dotfiles, backs up changed local configs, and enables common services when available.
 
 ```bash
 curl -fsSL https://kakkuos.jeme.app/install.sh \
@@ -87,18 +78,18 @@ cd kakkuos
 ./install.sh
 ```
 
-The script installs the package list, copies dotfiles into the current user's home directory, disables the default CachyOS Plymouth boot splash, sets `zsh` as the login shell when available, and enables common services.
+The script installs the package list, copies dotfiles into the current user's home directory, configures greetd to start `niri-session`, disables the default CachyOS Plymouth boot splash, sets `zsh` as the login shell when available, and enables common services.
 
 The installer is safe to run more than once. Unchanged config files are skipped, changed local config paths are backed up with a timestamp, and package installs use `--needed`.
 
 ## Default Package Set
 
-Kakku keeps CachyOS as the operating system base and adds an opinionated desktop, terminal, gaming, and development layer on top.
+KakkuOS uses CachyOS as its system base and ships an opinionated desktop, terminal, gaming, and development package set.
 
 Package lists live in:
 
 - `packages/profiles/core.txt` for base services and system-level tools
-- `packages/profiles/desktop.txt` for Hyprland, desktop apps, portals, audio, screenshots, notifications, fonts, and UI tools
+- `packages/profiles/desktop.txt` for niri, DankMaterialShell, desktop apps, portals, audio, fonts, and UI tools
 - `packages/profiles/cli.txt` for shell, terminal, and modern command-line tools
 - `packages/profiles/development.txt` for developer tools
 - `packages/profiles/gaming.txt` for gaming tools
@@ -108,7 +99,7 @@ Package lists live in:
 
 By default, `install.sh` installs every profile plus any extra packages listed in `packages/pacman.txt`.
 
-Check that the profile package lists and `kakku-desktop` package dependencies stay aligned:
+Check that the package profile lists and `kakku-desktop` package dependencies stay aligned:
 
 ```bash
 scripts/check-package-sync.sh
@@ -126,28 +117,21 @@ Available commands:
 
 | Command | Purpose |
 |---|---|
-| `kakku info` | Show Kakku, base OS, kernel, Hyprland, and current theme information. |
-| `kakku doctor` | Check expected commands, configs, theme paths, wallpaper, and key services. |
+| `kakku info` | Show Kakku, base OS, kernel, and niri/DMS information. |
+| `kakku doctor` | Check expected commands, configs, branding assets, and key services. |
 | `kakku services` | Show active/enabled state for key services. |
 | `kakku keybinds` | Print KakkuOS default keyboard shortcuts. |
 | `kakku paths` | Show important Kakku config and system paths. |
 | `kakku packages` | Show installed package profile information. |
-| `kakku screenshot region` | Take a region screenshot and open annotation. |
-| `kakku screenshot full` | Save a full screenshot. |
-| `kakku power` | Open the power menu. |
-| `kakku theme list` | List available themes. |
-| `kakku theme current` | Show the current theme. |
-| `kakku theme set <theme>` | Apply a theme. |
-| `kakku theme menu` | Open the theme picker menu. |
 | `kakku update` | Run a normal interactive system update with `pacman`, then AUR updates with `paru` or `yay` if available. |
 | `kakku defaults` | Configure default applications with `xdg-mime`. |
 | `kakku version` | Show the Kakku version string. |
 
-## Relationship To CachyOS
+## CachyOS Base
 
-Kakku is intended to stay a thin CachyOS-based desktop profile, not a deep fork.
+KakkuOS is a downstream operating system built on CachyOS rather than a replacement for CachyOS infrastructure.
 
-CachyOS owns:
+KakkuOS relies on CachyOS for:
 
 - kernel selection and kernel optimization
 - graphics drivers and hardware enablement
@@ -156,16 +140,15 @@ CachyOS owns:
 - low-level performance tuning
 - installer and hardware support
 
-Kakku owns:
+KakkuOS owns:
 
 - default package selection
-- Hyprland, Waybar, Rofi, Kitty, Mako, Fastfetch, and Zsh defaults
-- Kakku themes
-- Kakku branding
+- niri, DankMaterialShell, Alacritty, Fastfetch, and Zsh defaults
+- KakkuOS branding
 - user-facing desktop defaults
-- optional Kakku packaging and ISO profile later
+- Kakku packaging and a future ISO image
 
-The practical rule is: Kakku should customize the desktop experience while avoiding unnecessary changes to CachyOS kernel, driver, bootloader, repository, and hardware behavior.
+The practical rule is: KakkuOS should define the user-facing operating system while avoiding unnecessary changes to CachyOS kernel, driver, bootloader, repository, and hardware behavior.
 
 ### Base And Build Tools
 
@@ -178,34 +161,29 @@ These packages make the system useful for source builds, package builds, and day
 | `paru` | AUR helper available in CachyOS repositories, used by the installer for AUR packages. |
 | `pacman-contrib` | Arch maintenance helpers such as `paccache` for package cache cleanup. |
 
-### Hyprland Desktop
+### Niri And DankMaterialShell Desktop
 
 These packages provide the Wayland desktop session and its core user interface.
 
 | Package | Purpose |
 |---|---|
-| `hyprland` | Main Wayland compositor and window manager. |
-| `hyprpaper` | Wallpaper daemon used by the default Kakku Hyprland config. |
-| `hypridle` | Idle daemon for locking, sleeping, or turning off displays after inactivity. |
-| `hyprlock` | Lock screen for Hyprland. |
-| `hyprpicker` | Wayland color picker for grabbing colors from the screen. |
-| `hyprsunset` | Hyprland-native blue-light and gamma adjustment utility. |
-| `xdg-desktop-portal-hyprland` | Portal integration for screen sharing, file pickers, and desktop app permissions. |
+| `niri` | Scrollable tiling Wayland compositor. |
+| `dms-shell-niri` | DankMaterialShell desktop shell for niri, including bar, launcher, notifications, control center, lock/session UI, wallpaper, and theming integration. |
+| `xwayland-satellite` | Xwayland support for X11 applications under niri. |
+| `xdg-desktop-portal-gnome` | Portal integration used by niri for screen sharing and desktop permissions. |
+| `xdg-desktop-portal-gtk` | GTK portal fallback for file pickers and common desktop dialogs. |
 | `xdg-utils` | Basic desktop integration commands for opening files, URLs, and default apps. |
 | `xdg-user-dirs` | Creates standard user folders like Downloads, Documents, Pictures, and Videos. |
-| `waybar` | Top bar for workspaces, clock, tray, audio, network, and battery state. |
-| `rofi-wayland` | App launcher and window switcher. |
-| `kitty` | GPU-accelerated terminal emulator. |
+| `matugen` | Wallpaper-based Material color generation used by DMS. |
+| `qt6-multimedia-ffmpeg` | Qt multimedia backend used by DMS media components. |
+| `alacritty` | GPU-accelerated terminal emulator. |
 | `dolphin` | Graphical file manager. |
 | `zen-browser-bin` | Default Firefox-based web browser. |
 | `firefox` | Firefox browser, kept as a fallback for web links if Zen is unavailable. |
 | `google-chrome` | Google Chrome from the AUR, installed by the default AUR package list. |
 | `discord` | Voice and chat client for communities, gaming, and development groups. |
-| `mako` | Notification daemon for Wayland desktops. |
-| `hyprpolkitagent` | Hyprland-native graphical authentication prompts for admin actions. |
-| `hyprqt6engine` | Hyprland Qt 6 theme engine from the AUR, used by Kakku's environment defaults. |
 
-Kakku autostarts `waybar`, `hyprpaper`, `mako`, `hypridle`, `hyprsunset`, and `hyprpolkitagent` from the Hyprland config.
+Kakku configures greetd to launch `niri-session`; niri starts `xwayland-satellite` and the DMS user service from `~/.config/niri/config.kdl`.
 
 ### Audio, Network, And Devices
 
@@ -216,13 +194,9 @@ These packages cover common laptop and desktop hardware needs.
 | `pipewire` | Modern Linux audio and media server. |
 | `pipewire-pulse` | PulseAudio compatibility layer for apps that expect PulseAudio. |
 | `wireplumber` | PipeWire session manager. |
-| `pamixer` | Command-line audio volume control, useful for keybindings and Waybar. |
 | `networkmanager` | Network connection management. |
 | `bluez` | Bluetooth protocol stack. |
 | `bluez-utils` | Bluetooth command-line tools and service helpers. |
-| `bluetui` | Terminal UI for managing Bluetooth devices. |
-| `wiremix` | Terminal UI audio mixer for PipeWire. |
-| `brightnessctl` | Brightness control for laptops and monitor backlights. |
 | `tailscale` | WireGuard-based private mesh VPN for connecting personal machines and servers. |
 | `proton-vpn-gtk-app` | Proton VPN graphical client. |
 
@@ -270,7 +244,6 @@ Kakku includes modern replacements for common Unix commands while keeping behavi
 | `cowsay` | Fun | Classic CLI tool for generating ASCII art text bubbles. |
 | `sl` | `ls` typo | Steam locomotive animation for when you accidentally type `sl` instead of `ls`. |
 | `tty-clock` | Widget | A clean digital clock for the terminal. |
-| `cava` | Audio Visualizer | A highly-customizable audio visualizer for your terminal. |
 | `musikcube` | Media Player | Modern and sleek terminal-based music player for local files. |
 | `httpie` | HTTP Client | User-friendly, colorized command-line HTTP client (modern `curl` alternative). |
 | `glow` | Markdown Viewer | Renders Markdown files beautifully directly in the terminal. |
@@ -309,7 +282,7 @@ Configured shell behavior:
 | `noto-fonts` | Broad default text font coverage. |
 | `noto-fonts-cjk` | Chinese, Japanese, and Korean text support. |
 | `noto-fonts-emoji` | Emoji rendering support. |
-| `ttf-jetbrains-mono-nerd` | Terminal font with developer icons for Kitty, Starship, Waybar, and `eza`. |
+| `ttf-jetbrains-mono-nerd` | Terminal font with developer icons for Alacritty, Starship, DMS, and `eza`. |
 
 ### Gaming
 
@@ -366,56 +339,49 @@ These packages make the default install useful for media playback, screen record
 | `visual-studio-code-bin` | Visual Studio Code from the AUR. Kept in `packages/aur.txt` because it is not a normal repo package. |
 | `localsend-bin` | LocalSend from the AUR for local network file sharing between devices. |
 
-### Wayland Screenshot Tools
+### Wayland Session Controls
 
 | Package | Purpose |
 |---|---|
-| `grim` | Captures screenshots on Wayland. |
-| `slurp` | Selects a screen region, commonly used together with `grim`. |
-| `swappy` | Annotates screenshots after capture. |
 | `playerctl` | Controls media playback from keybindings or scripts. |
 
 ## Keybindings
 
 | Keybinding | Action |
 |---|---|
-| `Super+Enter` | Open Kitty terminal. |
-| `Super+D` | Open Rofi app launcher. |
+| `Super+Enter` / `Super+T` | Open Alacritty terminal. |
+| `Super+Space` / `Super+D` | Open DMS Spotlight launcher. |
 | `Super+E` | Open Dolphin. |
-| `Super+Shift+E` | Open Yazi in Kitty. |
+| `Super+Shift+E` | Open Yazi in Alacritty. |
 | `Super+Q` | Close active window. |
-| `Super+M` | Exit Hyprland. |
-| `Super+V` | Toggle floating. |
-| `Super+P` | Toggle pseudotile. |
-| `Super+J` | Toggle split. |
-| `Super+L` | Lock with Hyprlock. |
-| `Super+Shift+M` | Open KakkuOS power menu. |
-| `Super+Shift+T` | Open KakkuOS theme menu. |
-| `Print` | Region screenshot and annotation via `kakku screenshot region`. |
-| `Shift+Print` | Full screenshot saved under `~/Pictures/Screenshots` via `kakku screenshot full`. |
+| `Super+Shift+Q` | Exit niri. |
+| `Super+Shift+T` | Toggle floating. |
+| `Super+W` | Toggle tabbed column display. |
+| `Super+Alt+L` | Lock with DMS. |
+| `Super+Comma` | Open DMS settings. |
+| `Super+V` | Open DMS clipboard. |
+| `Super+N` | Open DMS notifications. |
+| `Print` | niri screenshot picker. |
+| `Ctrl+Print` | Screen screenshot saved under `~/Pictures/Screenshots`. |
+| `Alt+Print` | Window screenshot saved under `~/Pictures/Screenshots`. |
 | `Super+Left/Right/Up/Down` | Move focus. |
-| `Super+Shift+Left/Right/Up/Down` | Move active window. |
-| `Super+1..3` | Switch workspace. |
-| `Super+Shift+1..3` | Move window to workspace. |
-| `Super+Mouse1` | Move floating window. |
-| `Super+Mouse2` | Resize floating window. |
-| `Volume keys` | Adjust or mute audio through `pamixer`. |
+| `Super+Shift+Left/Right/Up/Down` | Move active column or window. |
+| `Super+1..9` | Switch workspace. |
+| `Super+Shift+1..9` | Move column to workspace. |
+| `Volume keys` | Adjust or mute audio through DMS. |
 | `Media keys` | Play/pause/next/previous through `playerctl`. |
-| `Brightness keys` | Adjust display brightness through `brightnessctl`. |
+| `Brightness keys` | Adjust display brightness through DMS. |
 
-## Waybar Actions
+## DankMaterialShell Actions
 
-| Module | Click Action |
+| Action | Command |
 |---|---|
-| Theme | Open `kakku theme menu`. |
-| Updates | Open a terminal system update. |
-| CPU / Memory | Open `btop`. |
-| Disk | Open `yazi /`. |
-| Bluetooth | Open `bluetui`. |
-| Network | Open `nmtui`. |
-| Audio left click | Toggle mute through `pamixer`. |
-| Audio right click | Open `wiremix`. |
-| Power | Open `kakku power`. |
+| Launcher | `dms ipc call spotlight toggle` |
+| Clipboard | `dms ipc call clipboard toggle` |
+| Notifications | `dms ipc call notifications toggle` |
+| Settings | `dms ipc call settings focusOrToggle` |
+| Wallpaper browser | `dms ipc call dankdash wallpaper` |
+| Lock | `dms ipc call lock lock` |
 
 ## Default Applications
 
@@ -428,45 +394,6 @@ kakku defaults
 Defaults include Zen Browser for web links, Dolphin for directories, mpv for audio/video, Pinta for images, and LibreOffice applications for office documents. Firefox remains a web-link fallback if Zen is unavailable.
 
 Zen Browser is configured with a policy file that force-installs uBlock Origin, Dark Reader, and SponsorBlock from Mozilla Add-ons.
-
-## Themes
-
-Kakku includes these cake-style themes:
-
-- `matcha`
-- `blueberry`
-- `strawberry`
-- `tiramisu`
-- `funfetti`
-- `velvet`
-- `caramel`
-- `mocha`
-- `vanilla`
-- `carrot`
-
-The default theme is `matcha`.
-
-List installed themes:
-
-```bash
-kakku theme list
-```
-
-Show the current theme:
-
-```bash
-kakku theme current
-```
-
-Apply a theme:
-
-```bash
-kakku theme set blueberry
-```
-
-Each theme includes its own placeholder `wallpaper.png`. These are dummy wallpapers that can be replaced later while keeping the theme structure stable.
-
-The theme switcher updates the current user's Hyprland, Hyprlock, Hyprqt6engine, Waybar, Rofi, Kitty, Mako, and wallpaper fragments. It also tries to reload Hyprland and Mako. Open terminal, launcher, and Qt application windows may need to be restarted to pick up the new theme.
 
 ## Bootloader And Boot Splash
 
@@ -491,10 +418,10 @@ The helper removes the Plymouth hook from `/etc/mkinitcpio.conf` when present, r
 
 ## Phase 2: Package The Defaults
 
-The `packaging/kakku-hyprland-settings` package installs Kakku defaults into `/etc/skel`, mirroring the model used by distribution settings packages. New users created after installation inherit those defaults.
+The `packaging/kakku-niri-settings` package installs KakkuOS defaults into `/etc/skel`, mirroring the model used by distribution settings packages. New users created after installation inherit those defaults.
 
 ```bash
-cd packaging/kakku-hyprland-settings
+cd packaging/kakku-niri-settings
 makepkg -si
 ```
 

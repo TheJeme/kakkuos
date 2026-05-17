@@ -60,7 +60,7 @@ extra_in_depends="$tmpdir/extra-in-depends"
 aur_in_profiles="$tmpdir/aur-in-profiles"
 
 read_profile_packages | sort_unique > "$profiles"
-read_pkgbuild_depends | grep -v '^kakku-hyprland-settings$' | sort_unique > "$depends"
+read_pkgbuild_depends | grep -v '^kakku-niri-settings$' | sort_unique > "$depends"
 read_package_file "$AUR_FILE" | sort_unique > "$aur"
 
 comm_missing_left "$profiles" "$depends" > "$missing_from_depends"
@@ -92,4 +92,3 @@ if (( failed )); then
 fi
 
 echo "Package profiles and kakku-desktop dependencies are in sync."
-

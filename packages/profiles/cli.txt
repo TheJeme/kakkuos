@@ -21,8 +21,6 @@ fastfetch
 btop
 tmux
 yazi
-wiremix
-bluetui
 7zip
 chafa
 imagemagick
@@ -33,7 +31,6 @@ cmatrix
 cowsay
 sl
 tty-clock
-cava
 httpie
 glow
 trippy

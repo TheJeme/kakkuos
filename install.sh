@@ -179,17 +179,12 @@ install_aur_packages
 
 mkdir -p "$HOME/.config"
 
-copy_config_dir hypr
-copy_config_dir waybar
-copy_config_dir rofi
+copy_config_dir niri
 copy_config_dir alacritty
 copy_config_dir fastfetch
-copy_config_dir mako
 copy_config_dir lazygit
 copy_config_dir yazi
 copy_config_dir btop
-copy_config_dir gtk-3.0
-copy_config_dir gtk-4.0
 
 if command -v xdg-user-dirs-update >/dev/null 2>&1; then
   xdg-user-dirs-update || true
@@ -200,11 +195,6 @@ mkdir -p "$HOME/Pictures/Screenshots"
 if [[ -d "$REPO_DIR/branding" ]]; then
   sudo install -dm755 /usr/share/backgrounds/kakku
   sudo cp -r "$REPO_DIR/branding/." /usr/share/backgrounds/kakku/
-fi
-
-if [[ -d "$REPO_DIR/themes" ]]; then
-  sudo install -dm755 /usr/share/kakku/themes
-  sudo cp -r "$REPO_DIR/themes/." /usr/share/kakku/themes/
 fi
 
 if [[ -d "$REPO_DIR/system/zen" ]]; then
@@ -235,12 +225,6 @@ if command -v xdg-mime >/dev/null 2>&1 && command -v kakku-defaults >/dev/null 2
   kakku-defaults || true
 fi
 
-# Initialize the default Kakku theme (matcha) so dynamically generated configs are placed correctly
-if command -v kakku-theme >/dev/null 2>&1; then
-  export HYPRLAND_INSTANCE_SIGNATURE="" # Prevent reload errors if running from TTY
-  kakku-theme set matcha >/dev/null 2>&1 || true
-fi
-
 # Disable CachyOS welcome app autostart
 if [[ -f /etc/xdg/autostart/cachyos-hello.desktop ]]; then
   sudo rm -f /etc/xdg/autostart/cachyos-hello.desktop
@@ -269,6 +253,10 @@ sudo usermod -aG docker "$USER" || true
 sudo install -Dm644 "$REPO_DIR/system/greetd/config.toml" /etc/greetd/config.toml
 sudo systemctl disable sddm.service 2>/dev/null || true
 sudo systemctl enable greetd.service || true
+
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl --user add-wants niri.service dms.service >/dev/null 2>&1 || true
+fi
 
 # Override os-release with KakkuOS branding
 if [[ -f "$REPO_DIR/system/os-release" ]]; then
