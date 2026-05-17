@@ -50,7 +50,7 @@ kakku/
     logo.svg
     wordmark.svg
     wordmark-compact.svg
-    fastfetch-logo.txt
+    text-logo.txt
   packaging/
     kakku-niri-settings/
     kakku-desktop/
