@@ -384,7 +384,7 @@ These packages make the default install useful for media playback, screen record
 | `nodejs` | JavaScript runtime for web tooling and server-side development. |
 | `npm` | Node package manager and package registry CLI. |
 | `pnpm` | Fast, disk-efficient package manager for JavaScript and TypeScript projects. |
-| `neovim` | Modern Vim-based terminal editor. Kakku ships a LazyVim-based default config in `~/.config/nvim`. |
+| `neovim` | Modern Vim-based terminal editor. Kakku ships a LazyVim-based default config with common web, config, Markdown, Docker, and TOML extras in `~/.config/nvim`. |
 | `lazygit` | Terminal UI for Git repositories. |
 | `lazydocker` | Terminal UI for Docker containers, images, volumes, and logs. |
 | `git-delta` | Better Git diff viewer used by the Lazygit config. |
