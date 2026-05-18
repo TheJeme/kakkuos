@@ -223,6 +223,7 @@ fix_user_dirs() {
 
 fix_missing_user_configs() {
   copy_missing_path /etc/skel/.config/fish "$CONFIG_HOME/fish"
+  copy_missing_path /etc/skel/.config/starship "$CONFIG_HOME/starship"
   copy_missing_path /etc/skel/.config/niri "$CONFIG_HOME/niri"
   copy_missing_path /etc/skel/.config/nvim "$CONFIG_HOME/nvim"
   copy_missing_path /etc/skel/.zshrc "$HOME/.zshrc"

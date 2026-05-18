@@ -241,7 +241,7 @@ Kakku does not replace DMS' generated `settings.json`, `plugin_settings.json`, c
 
 Kakku keeps DMS as the secure lock screen and adds a lightweight visual screensaver in front of it. The visual layer is terminal-based, starts in Ghostty when available, and uses `cmatrix` by default because it is native and much smoother than repainting the terminal from shell. Pointer motion and keypresses both exit the screensaver. The fallback renderer uses the ASCII logo from `/usr/share/kakku/screensaver/kakku.txt`, and users can override that logo with `~/.config/kakku/screensaver.txt`.
 
-The `kakku-idle.service` user service runs `kakku-idle`, which starts the visual screensaver after 3 minutes of idle time, stops it on activity, and hands off to `dms ipc call lock lock` after 10 minutes. The timeouts can be changed with `KAKKU_SCREENSAVER_TIMEOUT` and `KAKKU_LOCK_TIMEOUT`.
+The `kakku-idle.service` user service runs `kakku-idle`, which starts the visual screensaver after 5 minutes of idle time, stops it on activity, and hands off to `dms ipc call lock lock` after 15 minutes. The defaults can be changed with `KAKKU_SCREENSAVER_TIMEOUT`, `KAKKU_LOCK_TIMEOUT`, `KAKKU_SCREENSAVER_CMD`, `KAKKU_SCREENSAVER_STOP_CMD`, and `KAKKU_LOCK_CMD`. For the user service, put overrides in `~/.config/kakku/idle.env`.
 
 Useful commands:
 

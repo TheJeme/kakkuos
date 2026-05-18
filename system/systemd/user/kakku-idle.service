@@ -5,6 +5,7 @@ PartOf=graphical-session.target
 
 [Service]
 Type=simple
+EnvironmentFile=-%h/.config/kakku/idle.env
 ExecStart=/usr/bin/kakku-idle
 Restart=on-failure
 RestartSec=5

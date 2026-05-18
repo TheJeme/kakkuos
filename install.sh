@@ -234,6 +234,7 @@ mkdir -p "$HOME/.config"
 
 copy_config_dir fastfetch
 copy_config_dir lazygit
+copy_config_dir starship
 copy_config_dir yazi
 copy_niri_config
 copy_config_dir nvim

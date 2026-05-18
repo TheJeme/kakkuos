@@ -32,7 +32,7 @@ _apply_configs() {
     id "$username" &>/dev/null || continue
 
     # Copy .config directories
-    for dir in fastfetch lazygit yazi fish niri nvim; do
+    for dir in fastfetch lazygit starship yazi fish niri nvim; do
       if [ -d "$skel/.config/$dir" ]; then
         mkdir -p "$user_home/.config/$dir"
         cp -r "$skel/.config/$dir/." "$user_home/.config/$dir/"

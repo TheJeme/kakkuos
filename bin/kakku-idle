@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCREENSAVER_TIMEOUT="${KAKKU_SCREENSAVER_TIMEOUT:-180}"
-LOCK_TIMEOUT="${KAKKU_LOCK_TIMEOUT:-600}"
+SCREENSAVER_TIMEOUT="${KAKKU_SCREENSAVER_TIMEOUT:-300}"
+LOCK_TIMEOUT="${KAKKU_LOCK_TIMEOUT:-900}"
 LOCK_CMD="${KAKKU_LOCK_CMD:-dms ipc call lock lock || loginctl lock-session}"
+SCREENSAVER_CMD="${KAKKU_SCREENSAVER_CMD:-kakku-screensaver --idle}"
+SCREENSAVER_STOP_CMD="${KAKKU_SCREENSAVER_STOP_CMD:-kakku-screensaver --stop}"
 
 usage() {
   cat <<'EOF'
@@ -15,7 +17,9 @@ Runs the KakkuOS idle policy:
   - stop it on activity
   - hand off to the DMS lock screen after KAKKU_LOCK_TIMEOUT seconds
 
-Defaults: KAKKU_SCREENSAVER_TIMEOUT=180, KAKKU_LOCK_TIMEOUT=600.
+Defaults: KAKKU_SCREENSAVER_TIMEOUT=300, KAKKU_LOCK_TIMEOUT=900.
+User overrides can be placed in ~/.config/kakku/idle.env when running
+through kakku-idle.service.
 EOF
 }
 
@@ -52,8 +56,16 @@ if [[ -z "${WAYLAND_DISPLAY:-}" ]]; then
   exit 1
 fi
 
+for timeout_name in SCREENSAVER_TIMEOUT LOCK_TIMEOUT; do
+  timeout_value="${!timeout_name}"
+  if [[ ! "$timeout_value" =~ ^[0-9]+$ || "$timeout_value" -lt 1 ]]; then
+    echo "Invalid $timeout_name: $timeout_value" >&2
+    exit 1
+  fi
+done
+
 exec swayidle -w \
-  timeout "$SCREENSAVER_TIMEOUT" "kakku-screensaver --idle" \
-  resume "kakku-screensaver --stop" \
-  timeout "$LOCK_TIMEOUT" "kakku-screensaver --stop; $LOCK_CMD" \
-  before-sleep "kakku-screensaver --stop; $LOCK_CMD"
+  timeout "$SCREENSAVER_TIMEOUT" "$SCREENSAVER_CMD" \
+  resume "$SCREENSAVER_STOP_CMD" \
+  timeout "$LOCK_TIMEOUT" "$SCREENSAVER_STOP_CMD; $LOCK_CMD" \
+  before-sleep "$SCREENSAVER_STOP_CMD; $LOCK_CMD"
