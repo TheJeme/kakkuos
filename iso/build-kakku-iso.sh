@@ -603,9 +603,9 @@ stage_kakkuos() {
 
   install -Dm644 "$KAKKU_ROOT/branding/wallpaper.png" "$airootfs/usr/share/backgrounds/kakku/wallpaper.png"
   install -Dm644 "$KAKKU_ROOT/branding/logo.png" "$airootfs/usr/share/pixmaps/kakku-logo.png"
-  if [[ -d "$KAKKU_ROOT/wallpapers" ]]; then
-    install -dm755 "$airootfs/usr/share/backgrounds/kakku/wallpapers"
-    rsync -a --delete "$KAKKU_ROOT/wallpapers/" "$airootfs/usr/share/backgrounds/kakku/wallpapers/"
+  if [[ -d "$KAKKU_ROOT/themes" ]]; then
+    install -dm755 "$airootfs/usr/share/backgrounds/kakku/themes"
+    rsync -a --delete "$KAKKU_ROOT/themes/" "$airootfs/usr/share/backgrounds/kakku/themes/"
   fi
   install -dm755 "$airootfs/usr/share/kakku"
 

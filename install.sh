@@ -210,9 +210,9 @@ if [[ -d "$REPO_DIR/branding" ]]; then
   sudo cp -r "$REPO_DIR/branding/." /usr/share/backgrounds/kakku/
 fi
 
-if [[ -d "$REPO_DIR/wallpapers" ]]; then
-  sudo install -dm755 /usr/share/backgrounds/kakku/wallpapers
-  sudo cp -r "$REPO_DIR/wallpapers/." /usr/share/backgrounds/kakku/wallpapers/
+if [[ -d "$REPO_DIR/themes" ]]; then
+  sudo install -dm755 /usr/share/backgrounds/kakku/themes
+  sudo cp -r "$REPO_DIR/themes/." /usr/share/backgrounds/kakku/themes/
 fi
 
 if [[ -d "$REPO_DIR/system/browser" ]]; then

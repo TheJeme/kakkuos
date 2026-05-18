@@ -38,7 +38,9 @@ KakkuOS uses the following components:
 ```text
 kakku/
   install.sh
-  wallpapers/
+  themes/
+    default/
+      backgrounds/
   packages/
     aur.txt
     pacman.txt
@@ -73,7 +75,7 @@ kakku/
     kakku-desktop/
 ```
 
-OS-provided wallpapers are installed under `/usr/share/backgrounds/kakku/`.
+OS-provided theme backgrounds are installed under `/usr/share/backgrounds/kakku/themes/`.
 
 ## Install
 

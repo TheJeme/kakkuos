@@ -48,9 +48,9 @@ package() {
 
   install -dm755 "$pkgdir/usr/share/backgrounds/kakku"
   cp -r "$repo_root/branding/." "$pkgdir/usr/share/backgrounds/kakku/"
-  if [[ -d "$repo_root/wallpapers" ]]; then
-    install -dm755 "$pkgdir/usr/share/backgrounds/kakku/wallpapers"
-    cp -r "$repo_root/wallpapers/." "$pkgdir/usr/share/backgrounds/kakku/wallpapers/"
+  if [[ -d "$repo_root/themes" ]]; then
+    install -dm755 "$pkgdir/usr/share/backgrounds/kakku/themes"
+    cp -r "$repo_root/themes/." "$pkgdir/usr/share/backgrounds/kakku/themes/"
   fi
 
   install -dm755 "$pkgdir/usr/share/kakku/packages"
