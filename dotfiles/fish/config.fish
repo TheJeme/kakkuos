@@ -27,11 +27,6 @@ if status is-interactive
         alias find fd
     end
 
-    # Run fetch on startup
-    if command -v fastfetch >/dev/null
-        fastfetch
-    end
-
     # Initialize prompts and integrations
     if command -v starship >/dev/null
         starship init fish | source

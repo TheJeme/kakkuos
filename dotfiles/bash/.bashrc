@@ -28,11 +28,6 @@ if command -v fd >/dev/null 2>&1; then
     alias find='fd'
 fi
 
-# Run fetch on startup
-if command -v fastfetch >/dev/null 2>&1; then
-    fastfetch
-fi
-
 # Initialize prompts and integrations
 if command -v starship >/dev/null 2>&1; then
     eval "$(starship init bash)"

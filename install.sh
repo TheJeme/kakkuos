@@ -2,6 +2,7 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_NAME="$(basename "$0")"
 
 # Non-interactive installs are the default. Set `KAKKU_NONINTERACTIVE=0` to
 # run interactively. When non-interactive, add `--noconfirm` to pacman/AUR
@@ -13,13 +14,30 @@ KAKKU_SYSTEM_CONFIG="${KAKKU_SYSTEM_CONFIG:-1}"
 # (script will prompt for pacman/AUR confirmations). Default is non-interactive.
 print_usage() {
   cat <<EOF
-Usage: $0 [OPTIONS]
+Usage: $SCRIPT_NAME [OPTIONS]
 
 Options:
   -i, --interactive   Run interactively (ask for confirmations)
   --no-system-config  Skip login manager, service, bootloader, and OS branding changes
   -h, --help          Show this help
 EOF
+}
+
+die() {
+  echo "$1" >&2
+  exit 1
+}
+
+has_command() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+require_command() {
+  local command_name="$1"
+
+  if ! has_command "$command_name"; then
+    die "Missing required command: $command_name"
+  fi
 }
 
 while [[ "$#" -gt 0 ]]; do
@@ -42,7 +60,7 @@ while [[ "$#" -gt 0 ]]; do
       ;;
     *)
       echo "Unknown option: $1" >&2
-      print_usage
+      print_usage >&2
       exit 1
       ;;
   esac
@@ -125,15 +143,6 @@ copy_file_if_changed() {
   echo "Installed: $target"
 }
 
-require_command() {
-  local command_name="$1"
-
-  if ! command -v "$command_name" >/dev/null 2>&1; then
-    echo "Missing required command: $command_name" >&2
-    exit 1
-  fi
-}
-
 require_command sudo
 require_command pacman
 
@@ -163,10 +172,10 @@ install_aur_packages() {
     return
   fi
 
-  # prefer paru, fall back to yay if available
+  # Prefer paru, fall back to yay if available.
   local aur_cmd=""
   for helper in paru yay; do
-    if command -v "$helper" >/dev/null 2>&1; then
+    if has_command "$helper"; then
       aur_cmd="$helper"
       break
     fi
@@ -192,7 +201,7 @@ copy_config_dir yazi
 copy_config_dir btop
 copy_config_dir nvim
 
-if command -v xdg-user-dirs-update >/dev/null 2>&1; then
+if has_command xdg-user-dirs-update; then
   xdg-user-dirs-update || true
 fi
 
@@ -237,11 +246,11 @@ if [[ "${KAKKU_INSTALL_DMS_PLUGINS:-1}" == "1" && -x "$REPO_DIR/bin/kakku-dms-pl
   KAKKU_DMS_PLUGIN_DEFAULTS="$REPO_DIR/system/dms/plugin_settings.defaults.json" "$REPO_DIR/bin/kakku-dms-plugins" --no-restart || true
 fi
 
-if command -v xdg-mime >/dev/null 2>&1 && command -v kakku-defaults >/dev/null 2>&1; then
+if has_command xdg-mime && has_command kakku-defaults; then
   kakku-defaults || true
 fi
 
-# Disable CachyOS welcome app autostart
+# Disable CachyOS welcome app autostart.
 if [[ -f /etc/xdg/autostart/cachyos-hello.desktop ]]; then
   sudo rm -f /etc/xdg/autostart/cachyos-hello.desktop
 fi
@@ -253,12 +262,12 @@ copy_file_if_changed "$REPO_DIR/dotfiles/bash/.bashrc" "$HOME/.bashrc"
 copy_file_if_changed "$REPO_DIR/dotfiles/zsh/.zshrc" "$HOME/.zshrc"
 copy_config_dir fish
 
-if command -v fish >/dev/null 2>&1; then
+if has_command fish; then
   chsh -s /usr/bin/fish "$USER" || true
 fi
 
 if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
-  if command -v kakku-disable-plymouth >/dev/null 2>&1; then
+  if has_command kakku-disable-plymouth; then
     sudo kakku-disable-plymouth
   fi
 
