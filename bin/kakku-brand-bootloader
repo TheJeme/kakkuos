@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+limine_config_found=0
+
 require_root() {
   if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
     echo "Run as root: sudo kakku-brand-bootloader" >&2
@@ -27,13 +29,13 @@ replace_os_name() {
     cp "$file.kakku.bak" "$file"
   fi
 
-  # Safely replace user-facing menu titles only. Limine entries start with
-  # "/" (for example "/+CachyOS" or "//linux-cachyos"), while kernel paths are
-  # key/value lines and must keep linux-cachyos filenames intact.
-  sed -i -E '/^[[:space:]]*\/+/ s/[Cc]achy[Oo][Ss]/KakkuOS/g' "$file"
-  sed -i -E '/^[[:space:]]*\/+/ s/linux-cachyos/KakkuOS/g' "$file"
-  sed -i -E '/^[[:space:]]*\/+/ s/\(KakkuOS\)//g' "$file"
-  sed -i -E '/^[[:space:]]*\/+/ s/ - KakkuOS//g' "$file"
+  # Safely replace user-facing menu titles only. Limine top-level OS entries
+  # start with a single "/" (for example "/+CachyOS"). Child kernel entries
+  # start with "//" and are intentionally left alone.
+  sed -i -E '/^[[:space:]]*\/[^/]/ s/[Cc]achy[Oo][Ss]/KakkuOS/g' "$file"
+  sed -i -E '/^[[:space:]]*\/[^/]/ s/linux-cachyos/KakkuOS/g' "$file"
+  sed -i -E '/^[[:space:]]*\/[^/]/ s/\(KakkuOS\)//g' "$file"
+  sed -i -E '/^[[:space:]]*\/[^/]/ s/ - KakkuOS//g' "$file"
 
   sed -i -E '/^:/ s/[Cc]achy[Oo][Ss]/KakkuOS/g' "$file"
   sed -i -E '/^:/ s/linux-cachyos/KakkuOS/g' "$file"
@@ -46,29 +48,67 @@ replace_os_name() {
   sed -i -E '/^GRUB_DISTRIBUTOR/ s/[Cc]achy[Oo][Ss]/KakkuOS/g' "$file"
 
   # Clean up any weird dangling characters in menus
-  sed -i -E '/^[[:space:]]*\/+/ s/ - $//g' "$file"
-  sed -i -E '/^[[:space:]]*\/+/ s/ -$//g' "$file"
+  sed -i -E '/^[[:space:]]*\/[^/]/ s/ - $//g' "$file"
+  sed -i -E '/^[[:space:]]*\/[^/]/ s/ -$//g' "$file"
   sed -i -E '/^:/ s/ - $//g' "$file"
   sed -i -E '/^:/ s/ -$//g' "$file"
 
   echo "Safely branded bootloader menus in $file."
 }
 
+set_limine_target_os_name() {
+  local file="/etc/default/limine"
+  local tmp
+
+  mkdir -p /etc/default
+  touch "$file"
+  backup_file "$file"
+  tmp="$(mktemp)"
+
+  if grep -Eq '^[[:space:]]*#?[[:space:]]*TARGET_OS_NAME=' "$file"; then
+    sed -E 's/^[[:space:]]*#?[[:space:]]*TARGET_OS_NAME=.*/TARGET_OS_NAME="KakkuOS"/' "$file" > "$tmp"
+  else
+    cp "$file" "$tmp"
+    printf '\nTARGET_OS_NAME="KakkuOS"\n' >> "$tmp"
+  fi
+
+  if ! cmp -s "$file" "$tmp"; then
+    cp "$tmp" "$file"
+    echo "Set Limine TARGET_OS_NAME=KakkuOS in $file."
+  else
+    echo "Limine TARGET_OS_NAME already set in $file."
+  fi
+
+  rm -f "$tmp"
+}
+
+brand_limine_config() {
+  local file="$1"
+
+  if [[ -f "$file" ]]; then
+    limine_config_found=1
+    replace_os_name "$file"
+  fi
+}
+
 require_root
 
 # For Limine
-replace_os_name /limine.conf
-replace_os_name /limine/limine.conf
-replace_os_name /boot/limine.conf
-replace_os_name /boot/limine/limine.conf
-replace_os_name /boot/efi/EFI/limine/limine.conf
-replace_os_name /boot/efi/EFI/Limine/limine.conf
-replace_os_name /boot/EFI/limine/limine.conf
-replace_os_name /boot/EFI/Limine/limine.conf
+brand_limine_config /limine.conf
+brand_limine_config /limine/limine.conf
+brand_limine_config /boot/limine.conf
+brand_limine_config /boot/limine/limine.conf
+brand_limine_config /boot/efi/EFI/limine/limine.conf
+brand_limine_config /boot/efi/EFI/Limine/limine.conf
+brand_limine_config /boot/EFI/limine/limine.conf
+brand_limine_config /boot/EFI/Limine/limine.conf
 if [[ -d /etc/limine ]]; then
   for entry in /etc/limine/*.conf; do
-    replace_os_name "$entry"
+    brand_limine_config "$entry"
   done
+fi
+if (( limine_config_found )) || [[ -f /etc/default/limine ]]; then
+  set_limine_target_os_name
 fi
 
 # For systemd-boot

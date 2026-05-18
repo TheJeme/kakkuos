@@ -210,6 +210,7 @@ These packages provide the Wayland desktop session and its core user interface.
 | `matugen` | Wallpaper-based Material color generation used by DMS. |
 | `qt6-multimedia` | Qt multimedia libraries used by DMS sound and media components. |
 | `qt6-multimedia-ffmpeg` | Qt multimedia backend used by DMS media components. |
+| `qt6ct-kde` | Qt 6 configuration tool from the AUR, used with `QT_QPA_PLATFORMTHEME=qt6ct` for Qt/KDE app theming outside Plasma. |
 | `wtype` | Wayland typing helper used by DMS clipboard and plugin paste actions. |
 | `power-profiles-daemon` | Power profile backend used by DMS settings and quick controls. |
 | `i2c-tools` | External display brightness support used by DMS brightness controls. |
@@ -435,6 +436,8 @@ Recommended choices:
 For KakkuOS, the practical default recommendation is **Limine on Btrfs snapshot installs** and **systemd-boot for simple UEFI installs**.
 
 CachyOS ISOs enable Plymouth by default for the graphical boot splash. KakkuOS disables that splash during installation. The internal helper removes the Plymouth hook from `/etc/mkinitcpio.conf` when present, removes common `splash`/`quiet` boot parameters from supported bootloader config files, rebuilds initramfs with `mkinitcpio -P` only when a boot-related file changed, and leaves `.kakku.bak` backups for edited files.
+
+The bootloader branding helper only renames the top-level Limine OS menu entry to `KakkuOS`. It keeps child kernel entries such as `//linux-cachyos` intact and writes `TARGET_OS_NAME="KakkuOS"` to `/etc/default/limine` so `limine-snapper-sync` can still target the renamed entry.
 
 ## Phase 2: Package The Defaults
 
