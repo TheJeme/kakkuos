@@ -100,9 +100,9 @@ The script installs the package list, copies dotfiles into the current user's ho
 
 The installer is safe to run more than once. Unchanged config files are skipped, changed local config paths are backed up with a timestamp, and package installs use `--needed`.
 
-On an existing CachyOS install, `install.sh` should be treated as a conversion script. It keeps DMS' generated config files user-owned, but it still installs Kakku packages and defaults, backs up replaced Kakku-owned user config directories, switches the login manager to greetd, applies KakkuOS branding, and updates boot/service defaults. Use the default mode only when the intent is to make that install behave like KakkuOS.
+On an existing CachyOS install, `install.sh` should be treated as a conversion script. It keeps DMS' generated config files user-owned, but it still installs Kakku packages and defaults, backs up replaced Kakku-owned user config directories, switches the login manager to greetd, applies userspace KakkuOS branding, and updates service defaults. Use the default mode only when the intent is to make that install behave like KakkuOS.
 
-For an existing CachyOS + DMS install where you only want the Kakku user-layer defaults and DMS plugins without changing the login manager, bootloader, service defaults, or OS branding, run:
+For an existing CachyOS + DMS install where you only want the Kakku user-layer defaults and DMS plugins without changing the login manager, service defaults, or OS branding, run:
 
 ```bash
 ./install.sh --no-system-config
@@ -437,7 +437,7 @@ For KakkuOS, the practical default recommendation is **Limine on Btrfs snapshot 
 
 CachyOS ISOs enable Plymouth by default for the graphical boot splash. KakkuOS disables that splash during installation. The internal helper removes the Plymouth hook from `/etc/mkinitcpio.conf` when present, removes common `splash`/`quiet` boot parameters from supported bootloader config files, rebuilds initramfs with `mkinitcpio -P` only when a boot-related file changed, and leaves `.kakku.bak` backups for edited files.
 
-The bootloader branding helper only renames the top-level Limine OS menu entry to `KakkuOS`. It keeps child kernel entries such as `//linux-cachyos` intact and writes `TARGET_OS_NAME="KakkuOS"` to `/etc/default/limine` so `limine-snapper-sync` can still target the renamed entry.
+KakkuOS does not automatically rename bootloader entries during installation. CachyOS bootloader tooling, especially Limine with Btrfs snapshot integration, should remain managed by CachyOS until KakkuOS has a dedicated install flow.
 
 ## Phase 2: Package The Defaults
 

@@ -290,10 +290,6 @@ if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
     sudo cp "$REPO_DIR/system/os-release" /usr/lib/os-release
   fi
 
-  # Apply KakkuOS branding to bootloader
-  if [[ -x "$REPO_DIR/bin/kakku-brand-bootloader" ]]; then
-    sudo "$REPO_DIR/bin/kakku-brand-bootloader"
-  fi
 else
   echo "Skipped KakkuOS system configuration because --no-system-config was set."
 fi
