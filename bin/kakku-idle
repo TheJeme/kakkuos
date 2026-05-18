@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCREENSAVER_TIMEOUT="${KAKKU_SCREENSAVER_TIMEOUT:-180}"
+LOCK_TIMEOUT="${KAKKU_LOCK_TIMEOUT:-600}"
+LOCK_CMD="${KAKKU_LOCK_CMD:-dms ipc call lock lock || loginctl lock-session}"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  kakku-idle
+
+Runs the KakkuOS idle policy:
+  - start the visual screensaver after KAKKU_SCREENSAVER_TIMEOUT seconds
+  - stop it on activity
+  - hand off to the DMS lock screen after KAKKU_LOCK_TIMEOUT seconds
+
+Defaults: KAKKU_SCREENSAVER_TIMEOUT=180, KAKKU_LOCK_TIMEOUT=600.
+EOF
+}
+
+case "${1:-run}" in
+  run)
+    ;;
+  -h|--help|help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
+if ! command -v swayidle >/dev/null 2>&1; then
+  echo "Missing command: swayidle" >&2
+  exit 1
+fi
+
+if [[ -z "${WAYLAND_DISPLAY:-}" ]]; then
+  for socket in "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"/wayland-*; do
+    if [[ -S "$socket" ]]; then
+      export WAYLAND_DISPLAY="$(basename "$socket")"
+      break
+    fi
+  done
+fi
+
+if [[ -z "${WAYLAND_DISPLAY:-}" ]]; then
+  echo "No Wayland display is available yet." >&2
+  exit 1
+fi
+
+exec swayidle -w \
+  timeout "$SCREENSAVER_TIMEOUT" "kakku-screensaver --idle" \
+  resume "kakku-screensaver --stop" \
+  timeout "$LOCK_TIMEOUT" "kakku-screensaver --stop; $LOCK_CMD" \
+  before-sleep "kakku-screensaver --stop; $LOCK_CMD"

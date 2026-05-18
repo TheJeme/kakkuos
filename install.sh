@@ -143,6 +143,33 @@ copy_file_if_changed() {
   echo "Installed: $target"
 }
 
+copy_niri_config() {
+  local source="$REPO_DIR/dotfiles/niri"
+  local target="$HOME/.config/niri"
+
+  if [[ ! -d "$source" ]]; then
+    return
+  fi
+
+  mkdir -p "$target"
+  copy_file_if_changed "$source/config.kdl" "$target/config.kdl"
+
+  if [[ -d "$source/kakku" ]]; then
+    if [[ -e "$target/kakku" ]]; then
+      if paths_match "$source/kakku" "$target/kakku"; then
+        echo "Unchanged: $target/kakku"
+      else
+        backup_existing_path "$target/kakku"
+        cp -r "$source/kakku" "$target/kakku"
+        echo "Installed: $target/kakku"
+      fi
+    else
+      cp -r "$source/kakku" "$target/kakku"
+      echo "Installed: $target/kakku"
+    fi
+  fi
+}
+
 require_command sudo
 require_command pacman
 
@@ -174,6 +201,8 @@ install_aur_packages() {
 
   # Prefer paru, fall back to yay if available.
   local aur_cmd=""
+  local package
+  local -a failed_packages=()
   for helper in paru yay; do
     if has_command "$helper"; then
       aur_cmd="$helper"
@@ -182,7 +211,16 @@ install_aur_packages() {
   done
 
   if [[ -n "$aur_cmd" ]]; then
-    "$aur_cmd" "${aur_helper_flags[@]}" "${aur_packages[@]}"
+    for package in "${aur_packages[@]}"; do
+      if ! "$aur_cmd" "${aur_helper_flags[@]}" "$package"; then
+        echo "Warning: failed to install AUR package, continuing: $package" >&2
+        failed_packages+=("$package")
+      fi
+    done
+
+    if (( ${#failed_packages[@]} > 0 )); then
+      echo "Warning: skipped failed AUR packages: ${failed_packages[*]}" >&2
+    fi
   else
     echo "AUR packages are listed, but neither paru nor yay is installed." >&2
     echo "Install one AUR helper, then run the AUR install manually:" >&2
@@ -197,6 +235,7 @@ mkdir -p "$HOME/.config"
 copy_config_dir fastfetch
 copy_config_dir lazygit
 copy_config_dir yazi
+copy_niri_config
 copy_config_dir nvim
 
 if has_command xdg-user-dirs-update; then
@@ -223,6 +262,11 @@ fi
 if [[ -d "$REPO_DIR/system/dms" ]]; then
   sudo install -dm755 /usr/share/kakku/dms
   sudo cp -r "$REPO_DIR/system/dms/." /usr/share/kakku/dms/
+fi
+
+if [[ -d "$REPO_DIR/system/screensaver" ]]; then
+  sudo install -dm755 /usr/share/kakku/screensaver
+  sudo cp -r "$REPO_DIR/system/screensaver/." /usr/share/kakku/screensaver/
 fi
 
 if [[ -d "$REPO_DIR/bin" ]]; then
@@ -273,6 +317,13 @@ if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
 
   if [[ -f "$REPO_DIR/system/environment.d/kakku.conf" ]]; then
     sudo install -Dm644 "$REPO_DIR/system/environment.d/kakku.conf" /etc/environment.d/kakku.conf
+  fi
+
+  if [[ -f "$REPO_DIR/system/systemd/user/kakku-idle.service" ]]; then
+    sudo install -Dm644 "$REPO_DIR/system/systemd/user/kakku-idle.service" /usr/lib/systemd/user/kakku-idle.service
+    sudo systemctl --global enable kakku-idle.service || true
+    systemctl --user daemon-reload 2>/dev/null || true
+    systemctl --user enable --now kakku-idle.service 2>/dev/null || true
   fi
 
   sudo systemctl enable NetworkManager || true

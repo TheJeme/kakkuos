@@ -15,6 +15,8 @@ Usage:
   kakku keybinds
   kakku paths
   kakku packages
+  kakku screensaver
+  kakku idle
   kakku update
   kakku defaults
   kakku dms-plugins
@@ -221,6 +223,7 @@ fix_user_dirs() {
 
 fix_missing_user_configs() {
   copy_missing_path /etc/skel/.config/fish "$CONFIG_HOME/fish"
+  copy_missing_path /etc/skel/.config/niri "$CONFIG_HOME/niri"
   copy_missing_path /etc/skel/.config/nvim "$CONFIG_HOME/nvim"
   copy_missing_path /etc/skel/.zshrc "$HOME/.zshrc"
   copy_missing_path /etc/skel/.bashrc "$HOME/.bashrc"
@@ -308,6 +311,16 @@ fix_core_services() {
   done
 }
 
+fix_user_services() {
+  if ! has_command systemctl; then
+    echo "warn systemctl is missing"
+    return 0
+  fi
+
+  systemctl --user daemon-reload 2>/dev/null || true
+  systemctl --user enable --now kakku-idle.service 2>/dev/null || true
+}
+
 show_service_status() {
   local service="$1"
   local state="unknown"
@@ -330,14 +343,16 @@ show_services() {
 show_keybinds() {
   cat <<'EOF'
 KakkuOS keybindings:
-  Super+Enter       Open terminal
-  Super+Space/D     Open app launcher
-  Super+A           Toggle AI Assistant
-  Super+E           Open file manager
-  Super+Shift+E     Open Yazi in terminal
-  Super+Shift+C     Open Calculator query
+  Super+T           Open terminal
+  Super+Space       Open app launcher
+  Super+D/Tab       Toggle overview
+  Super+S           Start Kakku screensaver
+  Super+V           Open clipboard
+  Super+M           Open task manager
+  Super+X           Open power menu
+  Super+Y           Open wallpaper browser
   Super+Q           Close active window
-  Super+Shift+Q     Exit niri
+  Super+Shift+E     Exit niri
   Super+Shift+T     Toggle floating
   Super+W           Toggle tabbed column
   Super+Alt+L       Lock screen
@@ -385,6 +400,7 @@ show_paths() {
 Kakku paths:
   Config home:        $CONFIG_HOME
   DMS config:         $CONFIG_HOME/DankMaterialShell
+  Screensaver logo:   $CONFIG_HOME/kakku/screensaver.txt
   Shared files:       $KAKKU_SHARE
   Backgrounds:        /usr/share/backgrounds/kakku
 EOF
@@ -415,6 +431,7 @@ run_doctor_fix() {
   run_fix_step "install or update DMS plugins" fix_dms_plugins
   run_fix_step "set fish as login shell" fix_login_shell
   run_fix_step "enable core services" fix_core_services
+  run_fix_step "enable user idle service" fix_user_services
 
   echo
   echo "Repair pass completed. Rechecking..."
@@ -424,7 +441,7 @@ run_doctor_fix() {
 run_doctor_checks() {
   local failed=0
 
-  for command_name in niri dms xwayland-satellite ghostty kakku kakku-defaults kakku-browser-policies kakku-dms-plugins yazi btop fish zathura nvim codex; do
+  for command_name in niri dms xwayland-satellite ghostty swayidle kakku kakku-defaults kakku-browser-policies kakku-dms-plugins kakku-screensaver kakku-idle yazi btop fish zathura nvim codex; do
     check_command "$command_name" || failed=1
   done
 
@@ -432,7 +449,10 @@ run_doctor_checks() {
   check_path "$KAKKU_SHARE/dms/settings.defaults.json" || failed=1
   check_path "$KAKKU_SHARE/dms/plugin_settings.defaults.json" || failed=1
   check_path "$KAKKU_SHARE/dms/themes/kakku/theme.json" || failed=1
+  check_path "$KAKKU_SHARE/screensaver/kakku.txt" || failed=1
+  check_path /usr/lib/systemd/user/kakku-idle.service || failed=1
   check_path "$CONFIG_HOME/fish/config.fish" || failed=1
+  check_path "$CONFIG_HOME/niri/config.kdl" || failed=1
   check_path "$CONFIG_HOME/nvim/init.lua" || failed=1
   check_optional_path "$HOME/.zshrc"
   check_path "$CONFIG_HOME/DankMaterialShell/plugins" || failed=1
@@ -456,6 +476,7 @@ run_doctor_checks() {
   check_service_enabled tailscaled
   check_service_enabled power-profiles-daemon
   check_user_service_available dms.service
+  check_user_service_available kakku-idle.service
 
   if (( failed )); then
     echo
@@ -544,14 +565,25 @@ case "${1:-help}" in
   packages)
     show_packages
     ;;
+  screensaver)
+    shift
+    run_kakku_helper kakku-screensaver "$@"
+    ;;
+  idle)
+    shift
+    run_kakku_helper kakku-idle "$@"
+    ;;
   update)
+    shift
     run_update
     ;;
   defaults)
-    run_kakku_helper kakku-defaults
+    shift
+    run_kakku_helper kakku-defaults "$@"
     ;;
   dms-plugins)
-    run_kakku_helper kakku-dms-plugins
+    shift
+    run_kakku_helper kakku-dms-plugins "$@"
     ;;
   version)
     echo "KakkuOS 0.1.0"

@@ -209,6 +209,7 @@ These packages provide the Wayland desktop session and its core user interface.
 | `xdg-desktop-portal-gtk` | GTK portal fallback for file pickers and common desktop dialogs. |
 | `xdg-utils` | Basic desktop integration commands for opening files, URLs, and default apps. |
 | `xdg-user-dirs` | Creates standard user folders like Downloads, Documents, Pictures, and Videos. |
+| `swayidle` | Wayland idle manager used by Kakku to start the visual screensaver and then hand off to DMS lock. |
 | `matugen` | Wallpaper-based Material color generation used by DMS. |
 | `qt6-multimedia` | Qt multimedia libraries used by DMS sound and media components. |
 | `qt6-multimedia-ffmpeg` | Qt multimedia backend used by DMS media components. |
@@ -223,7 +224,7 @@ These packages provide the Wayland desktop session and its core user interface.
 | `google-chrome` | Google Chrome from the AUR, installed by the default AUR package list. |
 | `vesktop` | Custom Discord client for communities, gaming, and development groups. |
 
-Kakku installs DMS through the repository package `dms-shell-niri`. That split package pulls in the base `dms-shell` package and provides the niri compositor integration. Kakku configures greetd to launch `niri-session`; the user niri config remains owned by the local install for now.
+Kakku installs DMS through the repository package `dms-shell-niri`. That split package pulls in the base `dms-shell` package and provides the niri compositor integration. Kakku configures greetd to launch `niri-session` and ships a niri default config in `~/.config/niri` with Kakku-owned DMS keybindings, Kakku screenshot paths, and DMS-friendly window and layer rules. DMS-generated files under `~/.config/niri/dms` are left to DMS and are not required for niri to start.
 
 The install script also runs `kakku-dms-plugins --no-restart`, which installs or updates these DMS plugins under `~/.config/DankMaterialShell/plugins/`:
 
@@ -235,6 +236,20 @@ The install script also runs `kakku-dms-plugins --no-restart`, which installs or
 Run `kakku dms-plugins` later to update both plugin checkouts and restart DMS.
 
 Kakku does not replace DMS' generated `settings.json`, `plugin_settings.json`, cache, or session state. It merges missing defaults from `/usr/share/kakku/dms/plugin_settings.defaults.json` and `/usr/share/kakku/dms/settings.defaults.json`, so first boot gets the Kakku theme, bar layout, plugin defaults, and shell behavior while user changes and DMS-written values remain authoritative after that.
+
+### Screensaver And Idle
+
+Kakku keeps DMS as the secure lock screen and adds a lightweight visual screensaver in front of it. The visual layer is terminal-based, starts in Ghostty when available, and uses `cmatrix` by default because it is native and much smoother than repainting the terminal from shell. Pointer motion and keypresses both exit the screensaver. The fallback renderer uses the ASCII logo from `/usr/share/kakku/screensaver/kakku.txt`, and users can override that logo with `~/.config/kakku/screensaver.txt`.
+
+The `kakku-idle.service` user service runs `kakku-idle`, which starts the visual screensaver after 3 minutes of idle time, stops it on activity, and hands off to `dms ipc call lock lock` after 10 minutes. The timeouts can be changed with `KAKKU_SCREENSAVER_TIMEOUT` and `KAKKU_LOCK_TIMEOUT`.
+
+Useful commands:
+
+```bash
+kakku screensaver
+kakku screensaver --stop
+kakku idle
+```
 
 ### Audio, Network, And Devices
 
@@ -399,7 +414,7 @@ These packages make the default install useful for media playback, screen record
 
 ## Keybindings
 
-Kakku does not ship a niri keybinding config for now. Keep the local niri configuration from the installed system, or bind the DMS actions below in your own compositor config.
+Kakku ships a niri keybinding config in `~/.config/niri/config.kdl`. The most important DMS actions are listed below so they are easy to audit or rebind.
 
 ## DankMaterialShell Actions
 
@@ -411,6 +426,7 @@ Kakku does not ship a niri keybinding config for now. Keep the local niri config
 | Settings | `dms ipc call settings focusOrToggle` |
 | Wallpaper browser | `dms ipc call dankdash wallpaper` |
 | Lock | `dms ipc call lock lock` |
+| Screensaver | `kakku screensaver` |
 
 ## Default Applications
 
