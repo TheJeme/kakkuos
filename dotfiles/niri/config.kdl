@@ -164,6 +164,9 @@ environment {
 hotkey-overlay {
     skip-at-startup
 }
+cursor {
+    hide-after-inactive-ms 1000
+}
 prefer-no-csd
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 binds {
@@ -275,12 +278,10 @@ recent-windows {
     }
 }
 
-// Include dms files
-include "dms/colors.kdl"
-include "dms/layout.kdl"
-include "dms/alttab.kdl"
-include "dms/binds.kdl"
-include "dms/outputs.kdl"
-include "dms/cursor.kdl"
-
-include "dms/windowrules.kdl"
+// Include files
+include "colors.kdl"
+include "layout.kdl"
+include "alttab.kdl"
+include "binds.kdl"
+include "outputs.kdl"
+include "windowrules.kdl"
