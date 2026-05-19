@@ -12,16 +12,14 @@ KakkuOS is built from:
 - **Kernel**: CachyOS kernel
 - **Display Server**: Wayland
 - **Window Manager**: niri
-- **Desktop Shell**: DankMaterialShell (DMS)
+- **Desktop Shell**: DankMaterialShell
 - **Terminal**: Ghostty
-- **Shell**: fish (default), zsh, bash
+- **Shell**: fish
 - **Prompt**: Starship
-- **Browser**: Zen Browser & Firefox
+- **Browser**: Zen Browser & Chrome
 - **File Manager**: Dolphin & yazi
 - **Editor**: VS Code & Neovim
-- **Theme/Colors**: KakkuOS branding & matugen
 - **Audio**: PipeWire
-- **CLI**: kakku
 
 KakkuOS uses the following components:
 
@@ -32,47 +30,7 @@ KakkuOS uses the following components:
 - KakkuOS branding
 - KakkuOS default applications and system behavior
 - future KakkuOS installer or ISO image
-
-## Repository Layout
-
-```text
-kakku/
-  install.sh
-  backgrounds/
-  packages/
-    aur.txt
-    pacman.txt
-    profiles/
-      core.txt
-      desktop.txt
-      cli.txt
-      development.txt
-      gaming.txt
-      media.txt
-  dotfiles/
-    yazi/
-    lazygit/
-    fastfetch/
-    zsh/
-  system/
-    environment.d/
-    systemd/
-  bin/
-    kakku
-    kakku-*
-  branding/
-    wallpaper.svg
-    wallpaper.png
-    logo.svg
-    wordmark.svg
-    wordmark-compact.svg
-    text-logo.txt
-  packaging/
-    kakku-niri-settings/
-    kakku-desktop/
-```
-
-OS-provided backgrounds are installed under `/usr/share/backgrounds/kakku/`. Logos, wordmarks, and other branding assets are installed under `/usr/share/kakku/branding/`.
+- 
 
 ## Install
 
@@ -80,7 +38,7 @@ Install KakkuOS from a CachyOS base system.
 
 Install CachyOS first, then run the KakkuOS installer to convert that system into KakkuOS. Use the CachyOS online installer, pick Niri if the installer offers it, or pick the smallest/minimal graphical option available. Avoid installing multiple desktop environments during the CachyOS install.
 
-After rebooting into the new CachyOS system, run the hosted installer. It clones the KakkuOS repository, runs the project installer, installs packages with `--needed`, copies dotfiles, backs up changed local configs, and enables common services when available.
+After rebooting into the new CachyOS system, run the hosted installer. It clones the KakkuOS repository, runs the project installer, installs packages, copies dotfiles, backs up changed local configs, and enables common services.
 
 ```bash
 curl -fsSL https://kakkuos.jeme.app/install.sh \
@@ -97,20 +55,14 @@ cd kakkuos
 
 The script installs the package list, copies dotfiles into the current user's home directory, installs and configures the DMS greeter for login, removes the default CachyOS Plymouth boot splash, sets `fish` as the login shell when available, and enables common services.
 
-The installer is safe to run more than once. Unchanged config files are skipped, changed local config paths are backed up with a timestamp, and package installs use `--needed`.
+The installer is safe to run more than once. Unchanged config files are skipped, changed local config paths are backed up with a timestamp.
 
-On an existing CachyOS install, `install.sh` should be treated as a conversion script. It keeps DMS' generated config files user-owned, but it still installs Kakku packages and defaults, backs up replaced Kakku-owned user config directories, switches the login screen to DMS greeter, applies userspace KakkuOS branding, and updates service defaults. Use the default mode only when the intent is to make that install behave like KakkuOS.
+On an existing CachyOS install, `install.sh` should be treated as a conversion script. It keeps DMS generated config files user-owned, but it still installs Kakku packages and defaults, backs up replaced Kakku-owned user config directories, switches the login screen to DMS greeter, applies userspace KakkuOS branding, and updates service defaults. Use the default mode only when the intent is to make that install behave like KakkuOS.
 
-For an existing CachyOS + DMS install where you only want the Kakku user-layer defaults and DMS plugins without changing the login manager, service defaults, or OS branding, run:
+For an existing CachyOS + DMS install where you only want the Kakku user-layer defaults without changing the login manager, service defaults, or OS branding, run:
 
 ```bash
 ./install.sh --no-system-config
-```
-
-For only the default DMS plugins, run:
-
-```bash
-kakku-dms-plugins
 ```
 
 ## Default Package Set
@@ -149,15 +101,15 @@ Available commands:
 | Command | Purpose |
 |---|---|
 | `kakku info` | Show Kakku, base OS, kernel, and niri/DMS information. |
-| `kakku doctor` | Check expected commands, configs, branding assets, defaults, DMS plugins, and key services. |
-| `kakku doctor --fix` | Reapply safe local defaults, restore missing skel configs, refresh DMS plugins, apply browser policies, set fish, and enable core services. |
+| `kakku doctor` | Check expected commands, configs, branding assets, defaults, and key services. |
+| `kakku doctor --fix` | Reapply safe local defaults, restore missing skel configs, apply browser policies, set fish, and enable core services. |
 | `kakku services` | Show active/enabled state for key services. |
 | `kakku keybinds` | Print KakkuOS default keyboard shortcuts. |
 | `kakku paths` | Show important Kakku config and system paths. |
 | `kakku packages` | Show installed package profile information. |
 | `kakku update` | Update repo and AUR packages. DMS shell updates arrive through normal package updates. |
 | `kakku defaults` | Configure default applications with `xdg-mime`. |
-| `kakku version` | Show the Kakku version string. |
+| `kakku version` | Show the Kakku version. |
 
 ## CachyOS Base
 
@@ -178,7 +130,6 @@ KakkuOS owns:
 - niri, DankMaterialShell, Ghostty, Fastfetch, and shell defaults
 - KakkuOS branding
 - user-facing desktop defaults
-- Kakku packaging and a future ISO image
 
 The practical rule is: KakkuOS should define the user-facing operating system while avoiding unnecessary changes to CachyOS kernel, driver, repository, and hardware behavior.
 
@@ -234,16 +185,7 @@ Kakku ships `/usr/share/xdg-desktop-portal/niri-portals.conf` so niri sessions r
 
 Kakku installs DMS through the repository package `dms-shell-niri`. That split package pulls in the base `dms-shell` package and provides the niri compositor integration. Kakku configures greetd to launch the packaged DMS greeter with `/usr/bin/dms-greeter --command niri -p /usr/share/quickshell/dms`, so the login screen uses the DMS greeter UI instead of Kakku's old tuigreet wrapper. Kakku also ships a niri default config in `~/.config/niri` with Kakku-owned DMS keybindings, Kakku screenshot paths, and DMS-friendly window and layer rules. DMS-generated files under `~/.config/niri/dms` are left to DMS and are not required for niri to start.
 
-The install script also runs `kakku-dms-plugins --no-restart`, which installs or updates these DMS plugins under `~/.config/DankMaterialShell/plugins/`:
-
-| Plugin | Install directory | Source |
-|---|---|---|
-| AI Assistant | `AIAssistant` | `https://github.com/devnullvoid/dms-ai-assistant` |
-| Calculator | `Calculator` | `https://github.com/rochacbruno/DankCalculator` |
-
-Run `kakku dms-plugins` later to update both plugin checkouts and restart DMS.
-
-Kakku does not replace DMS' generated `settings.json`, `plugin_settings.json`, cache, or session state. It merges missing defaults from `/usr/share/kakku/dms/plugin_settings.defaults.json` and `/usr/share/kakku/dms/settings.defaults.json`, so first boot gets the Kakku theme, bar layout, plugin defaults, and shell behavior while user changes and DMS-written values remain authoritative after that.
+Kakku does not install DMS plugins by default. The base install only merges missing DMS settings from `/usr/share/kakku/dms/settings.defaults.json` so first boot gets the Kakku theme, bar layout, and shell behavior while user changes and DMS-written values remain authoritative after that.
 
 ### Screensaver And Idle
 
@@ -451,7 +393,7 @@ KakkuOS configures common default applications with:
 kakku defaults
 ```
 
-Defaults include Zen Browser for web links, Dolphin for directories, mpv for audio/video, imv for images, Zathura for PDFs, and LibreOffice applications for office documents. Firefox remains a web-link fallback if Zen is unavailable.
+Defaults include Zen Browser for web links, Chrome as the compatibility fallback, Dolphin for directories, mpv for audio/video, imv for images, Zathura for PDFs, and LibreOffice applications for office documents. Firefox remains installed as a secondary Gecko fallback if Zen is unavailable.
 
 Zen Browser is configured with a policy file that force-installs uBlock Origin, Dark Reader, and SponsorBlock from Mozilla Add-ons.
 

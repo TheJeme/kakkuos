@@ -19,7 +19,6 @@ Usage:
   kakku idle
   kakku update
   kakku defaults
-  kakku dms-plugins
   kakku version
 EOF
 }
@@ -163,23 +162,6 @@ check_browser_policies() {
   return "$failed"
 }
 
-check_dms_plugin() {
-  local plugin_dir="$1"
-  local plugin_id="$2"
-  local plugin_path="$CONFIG_HOME/DankMaterialShell/plugins/$plugin_dir/plugin.json"
-  local settings_file="$CONFIG_HOME/DankMaterialShell/plugin_settings.json"
-
-  check_path "$plugin_path" || return 1
-
-  if [[ -f "$settings_file" ]] && has_command jq; then
-    if jq -e --arg id "$plugin_id" '.[$id].enabled == true' "$settings_file" >/dev/null 2>&1; then
-      echo "ok   DMS plugin enabled: $plugin_id"
-    else
-      echo "warn DMS plugin not enabled in settings: $plugin_id"
-    fi
-  fi
-}
-
 copy_missing_path() {
   local source="$1"
   local target="$2"
@@ -213,7 +195,6 @@ run_fix_step() {
 
 fix_user_dirs() {
   mkdir -p "$CONFIG_HOME" "$HOME/Pictures/Screenshots"
-  mkdir -p "$CONFIG_HOME/DankMaterialShell/plugins"
 
   if has_command xdg-user-dirs-update; then
     xdg-user-dirs-update || true
@@ -242,14 +223,6 @@ fix_browser_policies() {
     run_kakku_helper kakku-browser-policies
   else
     echo "warn kakku-browser-policies is missing"
-  fi
-}
-
-fix_dms_plugins() {
-  if has_command kakku-dms-plugins; then
-    run_kakku_helper kakku-dms-plugins --no-restart
-  else
-    echo "warn kakku-dms-plugins is missing"
   fi
 }
 
@@ -496,7 +469,6 @@ run_doctor_fix() {
   run_fix_step "restore missing user configs from /etc/skel" fix_missing_user_configs
   run_fix_step "configure default applications" fix_defaults
   run_fix_step "install browser policies" fix_browser_policies
-  run_fix_step "install or update DMS plugins" fix_dms_plugins
   run_fix_step "set fish as login shell" fix_login_shell
   run_fix_step "enable core services" fix_core_services
   run_fix_step "enable user services" fix_user_services
@@ -509,7 +481,7 @@ run_doctor_fix() {
 run_doctor_checks() {
   local failed=0
 
-  for command_name in niri dms dsearch xwayland-satellite ghostty swayidle kakku kakku-defaults kakku-browser-policies kakku-dms-plugins kakku-screensaver kakku-idle yazi btop fish zathura nvim codex; do
+  for command_name in niri dms dsearch xwayland-satellite ghostty swayidle kakku kakku-defaults kakku-browser-policies kakku-screensaver kakku-idle yazi btop fish zathura nvim codex; do
     check_command "$command_name" || failed=1
   done
 
@@ -517,7 +489,6 @@ run_doctor_checks() {
   check_path "/usr/share/backgrounds/kakku/kakku-default.png" || failed=1
   check_path "$KAKKU_SHARE/branding/logo.png" || failed=1
   check_path "$KAKKU_SHARE/dms/settings.defaults.json" || failed=1
-  check_path "$KAKKU_SHARE/dms/plugin_settings.defaults.json" || failed=1
   check_path "$KAKKU_SHARE/dms/themes/kakku/theme.json" || failed=1
   check_command dms-greeter || failed=1
   check_path "$KAKKU_SHARE/screensaver/kakku.txt" || failed=1
@@ -526,10 +497,6 @@ run_doctor_checks() {
   check_path "$CONFIG_HOME/niri/config.kdl" || failed=1
   check_path "$CONFIG_HOME/nvim/init.lua" || failed=1
   check_optional_path "$HOME/.zshrc"
-  check_path "$CONFIG_HOME/DankMaterialShell/plugins" || failed=1
-
-  check_dms_plugin AIAssistant aiAssistant || failed=1
-  check_dms_plugin Calculator calculator || failed=1
 
   check_xdg_default application/pdf org.pwmt.zathura.desktop zathura.desktop || failed=1
   check_xdg_default image/png imv.desktop || failed=1
@@ -654,10 +621,6 @@ case "${1:-help}" in
   defaults)
     shift
     run_kakku_helper kakku-defaults "$@"
-    ;;
-  dms-plugins)
-    shift
-    run_kakku_helper kakku-dms-plugins "$@"
     ;;
   version)
     echo "KakkuOS 0.1.0"
