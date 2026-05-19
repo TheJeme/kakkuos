@@ -41,6 +41,60 @@ require_command() {
   fi
 }
 
+target_login_user() {
+  printf '%s\n' "${KAKKU_TARGET_USER:-${SUDO_USER:-$USER}}"
+}
+
+ensure_login_shell_listed() {
+  local shell_path="$1"
+
+  if [[ -f /etc/shells ]] && grep -Fxq "$shell_path" /etc/shells; then
+    return 0
+  fi
+
+  echo "Adding login shell to /etc/shells: $shell_path"
+  printf '%s\n' "$shell_path" | sudo tee -a /etc/shells >/dev/null
+}
+
+set_fish_login_shell() {
+  local fish_path=""
+  local target_user=""
+  local current_shell=""
+
+  if ! has_command fish; then
+    return 0
+  fi
+
+  fish_path="$(command -v fish)"
+  target_user="$(target_login_user)"
+
+  if [[ -z "$target_user" ]] || ! id "$target_user" >/dev/null 2>&1; then
+    echo "Warning: cannot set login shell, unknown user: ${target_user:-unset}" >&2
+    return 0
+  fi
+
+  if has_command getent; then
+    current_shell="$(getent passwd "$target_user" 2>/dev/null | awk -F: '{print $7}')"
+  fi
+
+  if [[ "$current_shell" == "$fish_path" || "$current_shell" == "/bin/fish" ]]; then
+    return 0
+  fi
+
+  ensure_login_shell_listed "$fish_path"
+
+  if has_command usermod; then
+    sudo usermod -s "$fish_path" "$target_user"
+  elif has_command chsh; then
+    sudo chsh -s "$fish_path" "$target_user"
+  else
+    echo "Warning: cannot set login shell, usermod and chsh are missing" >&2
+    return 0
+  fi
+
+  echo "Set login shell for $target_user to $fish_path"
+}
+
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     -i|--interactive)
@@ -334,9 +388,7 @@ copy_file_if_changed "$REPO_DIR/dotfiles/bash/.bashrc" "$HOME/.bashrc"
 copy_file_if_changed "$REPO_DIR/dotfiles/zsh/.zshrc" "$HOME/.zshrc"
 copy_config_dir fish
 
-if has_command fish; then
-  chsh -s /usr/bin/fish "$USER" || true
-fi
+set_fish_login_shell || true
 
 if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
   if has_command kakku-disable-plymouth; then
