@@ -27,10 +27,6 @@ post_upgrade() {
     kakku-firewall-defaults || true
   fi
 
-  if command -v kakku-browser-policies >/dev/null 2>&1; then
-    kakku-browser-policies || true
-  fi
-
   echo ""
   echo "  KakkuOS updated. A reboot is recommended."
   echo ""

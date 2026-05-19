@@ -9,6 +9,7 @@ SCRIPT_NAME="$(basename "$0")"
 # helper flags so the script doesn't pause for user confirmation.
 KAKKU_NONINTERACTIVE="${KAKKU_NONINTERACTIVE:-1}"
 KAKKU_SYSTEM_CONFIG="${KAKKU_SYSTEM_CONFIG:-1}"
+SUDO_KEEPALIVE_PID=""
 
 # Simple CLI parsing: `--interactive` or `-i` will force interactive mode
 # (script will prompt for pacman/AUR confirmations). Default is non-interactive.
@@ -173,6 +174,25 @@ copy_niri_config() {
 require_command sudo
 require_command pacman
 
+start_sudo_keepalive() {
+  sudo -v
+
+  while true; do
+    sleep 60
+    sudo -n true 2>/dev/null || exit
+  done &
+  SUDO_KEEPALIVE_PID="$!"
+}
+
+stop_sudo_keepalive() {
+  if [[ -n "$SUDO_KEEPALIVE_PID" ]]; then
+    kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
+  fi
+}
+
+trap stop_sudo_keepalive EXIT
+start_sudo_keepalive
+
 mapfile -t pacman_packages < <(
   {
     read_package_list "$REPO_DIR/packages/pacman.txt"
@@ -279,10 +299,6 @@ if [[ -d "$REPO_DIR/bin" ]]; then
     [[ -f "$script" ]] || continue
     sudo install -Dm755 "$script" "/usr/bin/$(basename "$script")"
   done
-fi
-
-if [[ -f "$REPO_DIR/system/pacman.d/hooks/kakku-browser-policies.hook" ]]; then
-  sudo install -Dm644 "$REPO_DIR/system/pacman.d/hooks/kakku-browser-policies.hook" /usr/share/libalpm/hooks/kakku-browser-policies.hook
 fi
 
 if [[ -f "$REPO_DIR/system/xdg-desktop-portal/niri-portals.conf" ]]; then

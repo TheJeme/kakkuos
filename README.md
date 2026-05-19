@@ -55,7 +55,6 @@ kakku/
     fastfetch/
     zsh/
   system/
-    pacman.conf.d/
     environment.d/
     systemd/
   bin/

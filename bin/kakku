@@ -151,7 +151,6 @@ check_browser_policies() {
   )
 
   check_path "$KAKKU_SHARE/browser/policies.json" || failed=1
-  check_path /usr/share/libalpm/hooks/kakku-browser-policies.hook || failed=1
 
   for target in "${targets[@]}"; do
     if [[ -f "$target" ]]; then
