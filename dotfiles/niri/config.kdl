@@ -320,6 +320,10 @@ binds {
        spawn "dms" "ipc" "call" "brightness" "decrement" "5" "";
     }
 
+    XF86Calculator {
+        spawn "speedcrunch";
+    }
+
     // === Window Management ===
     Mod+Q repeat=false { close-window; }
     Mod+F { maximize-column; }
