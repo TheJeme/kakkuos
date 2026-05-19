@@ -252,8 +252,6 @@ debug {
 // Override to disable super+tab
 recent-windows {
     highlight {
-        active-color   "#6f2438"
-        urgent-color   "#f38ba8"
         corner-radius 12
     }
 
@@ -272,15 +270,17 @@ window-rule {
 
 binds {
     // === System & Overview ===
-    Mod+D repeat=false { toggle-overview; }
     Mod+Tab repeat=false { toggle-overview; }
     Mod+section { show-hotkey-overlay; }
-    Mod+S hotkey-overlay-title="Start Kakku Screensaver" {
+    Mod+Alt+S hotkey-overlay-title="Start Kakku Screensaver" {
         spawn "kakku-screensaver";
     }
 
     // === Application Launchers ===
     Mod+T hotkey-overlay-title="Open Terminal" { spawn "ghostty"; }
+    Mod+B hotkey-overlay-title="Open Browser" { spawn "zen-browser"; }
+    Mod+D hotkey-overlay-title="Open Discord" { spawn "vesktop"; }
+    Mod+S hotkey-overlay-title="Open Steam" { spawn "steam"; }
     Mod+Space hotkey-overlay-title="Application Launcher" {
         spawn "dms" "ipc" "call" "spotlight" "toggle";
     }

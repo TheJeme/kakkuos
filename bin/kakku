@@ -353,6 +353,9 @@ KakkuOS keybindings:
 
   DMS and applications
     Super+T                       Open Ghostty terminal
+    Super+B                       Open browser
+    Super+Shift+D                 Open Discord/Vesktop
+    Super+Shift+S                 Open Steam
     Super+Space                   Open DMS launcher
     Super+V                       Open clipboard
     Super+M / Ctrl+Alt+Delete     Open task manager
