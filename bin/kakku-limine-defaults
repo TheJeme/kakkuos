@@ -2,7 +2,7 @@
 set -euo pipefail
 
 source_file="${KAKKU_LIMINE_DEFAULTS_SOURCE:-/usr/share/kakku/default/limine}"
-target_file="/etc/default/limine"
+default_file="/etc/default/limine"
 changed=0
 
 require_root() {
@@ -24,7 +24,13 @@ backup_file() {
 read_timeout() {
   local file="$1"
 
-  awk -F= '
+  awk -F'[:=]' '
+    /^[[:space:]]*timeout[[:space:]]*:/ {
+      value = $2
+      gsub(/^[[:space:]"]+|[[:space:]"]+$/, "", value)
+      print value
+      exit
+    }
     /^[[:space:]]*TIMEOUT[[:space:]]*=/ {
       value = $2
       gsub(/^[[:space:]"]+|[[:space:]"]+$/, "", value)
@@ -34,7 +40,7 @@ read_timeout() {
   ' "$file"
 }
 
-apply_timeout() {
+apply_default_timeout() {
   local timeout_value="$1"
   local tmp
 
@@ -44,7 +50,7 @@ apply_timeout() {
   fi
 
   tmp="$(mktemp)"
-  if [[ -f "$target_file" ]]; then
+  if [[ -f "$default_file" ]]; then
     awk -v timeout="$timeout_value" '
       /^[[:space:]]*TIMEOUT[[:space:]]*=/ {
         if (!seen) {
@@ -59,21 +65,57 @@ apply_timeout() {
           print "TIMEOUT=" timeout
         }
       }
-    ' "$target_file" > "$tmp"
+    ' "$default_file" > "$tmp"
   else
     printf 'TIMEOUT=%s\n' "$timeout_value" > "$tmp"
   fi
 
-  if [[ -f "$target_file" ]] && cmp -s "$target_file" "$tmp"; then
+  if [[ -f "$default_file" ]] && cmp -s "$default_file" "$tmp"; then
     rm -f "$tmp"
     return 0
   fi
 
-  backup_file "$target_file"
-  install -Dm644 "$tmp" "$target_file"
+  backup_file "$default_file"
+  install -Dm644 "$tmp" "$default_file"
   rm -f "$tmp"
   changed=1
-  echo "Applied Limine TIMEOUT=$timeout_value to $target_file."
+  echo "Applied Limine TIMEOUT=$timeout_value to $default_file."
+}
+
+apply_menu_timeout() {
+  local timeout_value="$1"
+  local file="$2"
+  local tmp
+
+  [[ -f "$file" ]] || return 1
+  tmp="$(mktemp)"
+
+  awk -v timeout="$timeout_value" '
+    /^[[:space:]]*timeout[[:space:]]*:/ {
+      if (!seen) {
+        print "timeout: " timeout
+        seen = 1
+      }
+      next
+    }
+    { print }
+    END {
+      if (!seen) {
+        print "timeout: " timeout
+      }
+    }
+  ' "$file" > "$tmp"
+
+  if cmp -s "$file" "$tmp"; then
+    rm -f "$tmp"
+    return 0
+  fi
+
+  backup_file "$file"
+  install -Dm644 "$tmp" "$file"
+  rm -f "$tmp"
+  changed=1
+  echo "Applied Limine timeout: $timeout_value to $file."
 }
 
 require_root
@@ -83,7 +125,24 @@ if [[ ! -f "$source_file" ]]; then
   exit 1
 fi
 
-apply_timeout "$(read_timeout "$source_file")"
+timeout_value="$(read_timeout "$source_file")"
+if [[ -z "$timeout_value" ]]; then
+  echo "No timeout value found in $source_file; skipped Limine defaults." >&2
+  exit 0
+fi
+
+apply_default_timeout "$timeout_value"
+
+found_menu_config=0
+for menu_file in /boot/limine.conf /boot/efi/limine.conf /efi/limine.conf; do
+  if apply_menu_timeout "$timeout_value" "$menu_file"; then
+    found_menu_config=1
+  fi
+done
+
+if (( ! found_menu_config )); then
+  echo "Warning: no Limine menu config found under /boot/limine.conf, /boot/efi/limine.conf, or /efi/limine.conf." >&2
+fi
 
 if (( changed )) && command -v limine-update >/dev/null 2>&1; then
   limine-update

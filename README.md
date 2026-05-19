@@ -32,13 +32,7 @@ cd kakkuos
 ./install.sh
 ```
 
-The installer installs package profiles, copies Kakku-owned dotfiles, applies branding, sets default apps, configures the DMS greeter, removes Plymouth, applies Limine timeout defaults, and enables common services. It assumes CachyOS repositories and packages are already available on the system.
-
-Use this only when you want the machine to behave like KakkuOS. For user-layer files without system-level changes:
-
-```bash
-./install.sh --no-system-config
-```
+The installer installs package profiles, copies Kakku-owned dotfiles, sets fish as the login shell, applies branding, sets default apps, configures greetd with the DMS greeter, removes Plymouth, applies Limine timeout defaults, and enables common services. It assumes CachyOS repositories and required AUR packages are available on the system.
 
 ## Repository Layout
 

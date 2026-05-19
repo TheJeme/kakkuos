@@ -7,7 +7,6 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # run interactively. When non-interactive, add `--noconfirm` to pacman/AUR
 # helper flags so the script doesn't pause for user confirmation.
 KAKKU_NONINTERACTIVE="${KAKKU_NONINTERACTIVE:-1}"
-SUDO_KEEPALIVE_PID=""
 
 die() {
   echo "$1" >&2
@@ -38,18 +37,15 @@ set_fish_login_shell() {
   target_user="$(target_login_user)"
 
   if [[ -z "$fish_path" || ! -x "$fish_path" ]]; then
-    echo "Warning: skipped login shell change; fish is unavailable." >&2
-    return 0
+    die "fish is unavailable; cannot set the Kakku login shell."
   fi
 
   if ! "$fish_path" --no-config -c 'exit 0'; then
-    echo "Warning: skipped login shell change; fish did not pass a launch check." >&2
-    return 0
+    die "fish failed its launch check; refusing to set it as the login shell."
   fi
 
   if [[ -z "$target_user" ]] || ! id "$target_user" >/dev/null 2>&1; then
-    echo "Warning: skipped login shell change; unknown user: ${target_user:-unset}" >&2
-    return 0
+    die "Unknown target user for login shell: ${target_user:-unset}"
   fi
 
   if [[ -f /etc/shells ]] && ! grep -Fxq "$fish_path" /etc/shells; then
@@ -65,19 +61,16 @@ enable_greetd_login_manager() {
 
   for command_name in greetd dms-greeter niri; do
     if ! has_command "$command_name"; then
-      echo "Warning: skipped greetd switch; missing command: $command_name" >&2
-      return 0
+      die "Missing required command for greetd login: $command_name"
     fi
   done
 
   if [[ ! -d /usr/share/quickshell/dms ]]; then
-    echo "Warning: skipped greetd switch; missing DMS shell path: /usr/share/quickshell/dms" >&2
-    return 0
+    die "Missing DMS shell path: /usr/share/quickshell/dms"
   fi
 
   if ! id greeter >/dev/null 2>&1; then
-    echo "Warning: skipped greetd switch; greeter user is missing." >&2
-    return 0
+    die "Missing greeter user; cannot enable greetd safely."
   fi
 
   sudo install -Dm644 "$config_source" /etc/greetd/config.toml
@@ -177,27 +170,21 @@ copy_niri_config() {
   fi
 }
 
+install_dms_user_settings() {
+  local source="$REPO_DIR/system/dms/settings.defaults.json"
+  local target="$HOME/.config/DankMaterialShell/settings.json"
+
+  if [[ ! -f "$source" ]]; then
+    return
+  fi
+
+  mkdir -p "$(dirname "$target")"
+  cp "$source" "$target"
+  echo "Installed: $target"
+}
+
 require_command sudo
 require_command pacman
-
-start_sudo_keepalive() {
-  sudo -v
-
-  while true; do
-    sleep 60
-    sudo -n true 2>/dev/null || exit
-  done &
-  SUDO_KEEPALIVE_PID="$!"
-}
-
-stop_sudo_keepalive() {
-  if [[ -n "$SUDO_KEEPALIVE_PID" ]]; then
-    kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
-  fi
-}
-
-trap stop_sudo_keepalive EXIT
-start_sudo_keepalive
 
 mapfile -t pacman_packages < <(
   {
@@ -256,18 +243,16 @@ install_aur_packages() {
   if [[ -n "$aur_cmd" ]]; then
     for package in "${aur_packages[@]}"; do
       if ! "$aur_cmd" "${aur_helper_flags[@]}" "$package"; then
-        echo "Warning: failed to install AUR package, continuing: $package" >&2
+        echo "Warning: failed to install AUR package: $package" >&2
         failed_packages+=("$package")
       fi
     done
 
     if (( ${#failed_packages[@]} > 0 )); then
-      echo "Warning: skipped failed AUR packages: ${failed_packages[*]}" >&2
+      die "Failed to install required AUR packages: ${failed_packages[*]}"
     fi
   else
-    echo "AUR packages are listed, but neither paru nor yay is installed." >&2
-    echo "Install one AUR helper, then run the AUR install manually:" >&2
-    echo "  paru -S --needed - < packages/aur.txt" >&2
+    die "AUR packages are required, but neither paru nor yay is installed."
   fi
 }
 
@@ -281,6 +266,7 @@ copy_config_dir starship
 copy_config_dir yazi
 copy_niri_config
 copy_config_dir nvim
+install_dms_user_settings
 
 if has_command xdg-user-dirs-update; then
   xdg-user-dirs-update || true

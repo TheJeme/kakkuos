@@ -52,6 +52,7 @@ package() {
   cp -r "$repo_root/dotfiles/fish" "$pkgdir/etc/skel/.config/fish"
   cp -r "$repo_root/dotfiles/niri" "$pkgdir/etc/skel/.config/niri"
   cp -r "$repo_root/dotfiles/nvim" "$pkgdir/etc/skel/.config/nvim"
+  install -Dm644 "$repo_root/system/dms/settings.defaults.json" "$pkgdir/etc/skel/.config/DankMaterialShell/settings.json"
 
   install -Dm644 "$repo_root/dotfiles/bash/.bashrc" "$pkgdir/etc/skel/.bashrc"
   install -Dm644 "$repo_root/dotfiles/zsh/.zshrc" "$pkgdir/etc/skel/.zshrc"
