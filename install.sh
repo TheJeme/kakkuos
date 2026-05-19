@@ -76,7 +76,7 @@ enable_greetd_login_manager() {
   sudo install -Dm644 "$config_source" /etc/greetd/config.toml
   sudo systemctl disable sddm.service 2>/dev/null || true
   sudo systemctl disable ly.service 2>/dev/null || true
-  sudo systemctl enable greetd.service || true
+  sudo systemctl enable greetd.service
   echo "Enabled greetd login manager."
 }
 

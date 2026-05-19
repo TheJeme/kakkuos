@@ -523,7 +523,7 @@ arch-chroot "\$target" pacman -Syu --needed --noconfirm kakku-desktop
 
 arch-chroot "\$target" systemctl disable sddm.service 2>/dev/null || true
 arch-chroot "\$target" systemctl disable ly.service 2>/dev/null || true
-arch-chroot "\$target" systemctl enable greetd.service 2>/dev/null || true
+arch-chroot "\$target" systemctl enable greetd.service
 arch-chroot "\$target" systemctl enable NetworkManager.service 2>/dev/null || true
 arch-chroot "\$target" systemctl enable bluetooth.service 2>/dev/null || true
 arch-chroot "\$target" systemctl enable power-profiles-daemon.service 2>/dev/null || true
