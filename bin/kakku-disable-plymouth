@@ -32,7 +32,7 @@ disable_limine_plymouth() {
 
   tmp="$(mktemp)"
   awk '
-    function normalize(line,    prefix, value, close, quote, n, parts, i, token, out) {
+    function normalize(line,    prefix, value, closing_quote, quote, n, parts, i, token, out) {
       if (line !~ /^[[:space:]]*KERNEL_CMDLINE\[default\]\+=/) {
         return line
       }
@@ -44,10 +44,10 @@ disable_limine_plymouth() {
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
 
       quote = ""
-      close = ""
+      closing_quote = ""
       if (value ~ /^"/ && value ~ /"$/) {
         quote = "\""
-        close = "\""
+        closing_quote = "\""
         sub(/^"/, "", value)
         sub(/"$/, "", value)
       }
@@ -63,7 +63,7 @@ disable_limine_plymouth() {
       }
       out = out (out ? " " : "") "plymouth.enable=0 disablehooks=plymouth"
       seen = 1
-      return prefix quote out close
+      return prefix quote out closing_quote
     }
 
     { print normalize($0) }
