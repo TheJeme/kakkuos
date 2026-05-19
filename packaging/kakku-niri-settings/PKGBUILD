@@ -81,6 +81,8 @@ package() {
 
   install -Dm644 "$repo_root/system/pacman.d/hooks/kakku-browser-policies.hook" "$pkgdir/usr/share/libalpm/hooks/kakku-browser-policies.hook"
 
+  install -Dm644 "$repo_root/system/xdg-desktop-portal/niri-portals.conf" "$pkgdir/usr/share/xdg-desktop-portal/niri-portals.conf"
+
   install -Dm644 "$repo_root/system/environment.d/kakku.conf" "$pkgdir/etc/environment.d/kakku.conf"
 
   install -Dm644 "$repo_root/system/greetd/config.toml" "$pkgdir/etc/greetd/config.toml"

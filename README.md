@@ -226,6 +226,8 @@ These packages provide the Wayland desktop session and its core user interface.
 | `greetd-dms-greeter-git` | DMS login greeter for greetd, replacing the previous text-based tuigreet login screen. |
 | `dsearch-bin` | DankSearch filesystem search backend used by the DMS launcher when typing `/`. |
 
+Kakku ships `/usr/share/xdg-desktop-portal/niri-portals.conf` so niri sessions route portal requests through `xdg-desktop-portal-gnome` with GTK as fallback. Without this, apps such as Vesktop can open the screen share picker but fail with no video source.
+
 Kakku installs DMS through the repository package `dms-shell-niri`. That split package pulls in the base `dms-shell` package and provides the niri compositor integration. Kakku configures greetd to launch the packaged DMS greeter with `/usr/bin/dms-greeter --command niri -p /usr/share/quickshell/dms`, so the login screen uses the DMS greeter UI instead of Kakku's old tuigreet wrapper. Kakku also ships a niri default config in `~/.config/niri` with Kakku-owned DMS keybindings, Kakku screenshot paths, and DMS-friendly window and layer rules. DMS-generated files under `~/.config/niri/dms` are left to DMS and are not required for niri to start.
 
 The install script also runs `kakku-dms-plugins --no-restart`, which installs or updates these DMS plugins under `~/.config/DankMaterialShell/plugins/`:

@@ -281,6 +281,10 @@ if [[ -f "$REPO_DIR/system/pacman.d/hooks/kakku-browser-policies.hook" ]]; then
   sudo install -Dm644 "$REPO_DIR/system/pacman.d/hooks/kakku-browser-policies.hook" /usr/share/libalpm/hooks/kakku-browser-policies.hook
 fi
 
+if [[ -f "$REPO_DIR/system/xdg-desktop-portal/niri-portals.conf" ]]; then
+  sudo install -Dm644 "$REPO_DIR/system/xdg-desktop-portal/niri-portals.conf" /usr/share/xdg-desktop-portal/niri-portals.conf
+fi
+
 if [[ -x "$REPO_DIR/bin/kakku-browser-policies" ]]; then
   KAKKU_BROWSER_POLICIES_SOURCE="$REPO_DIR/system/browser/policies.json" "$REPO_DIR/bin/kakku-browser-policies" || true
 fi
