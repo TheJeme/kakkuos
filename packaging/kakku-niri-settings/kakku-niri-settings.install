@@ -35,24 +35,65 @@ _apply_configs() {
     username=$(basename "$user_home")
     id "$username" &>/dev/null || continue
 
-    # Copy .config directories
+    # Update owned files inside .config directories without replacing the directories.
     for dir in fastfetch lazygit starship yazi fish niri nvim; do
       if [ -d "$skel/.config/$dir" ]; then
-        mkdir -p "$user_home/.config/$dir"
-        cp -r "$skel/.config/$dir/." "$user_home/.config/$dir/"
-        chown -R "$username:$username" "$user_home/.config/$dir"
+        _copy_tree_files "$skel/.config/$dir" "$user_home/.config/$dir" "$username"
       fi
     done
 
-    # Copy shell rc files
+    # Shell rc files are individual Kakku-owned defaults and may be updated.
     if [ -f "$skel/.bashrc" ]; then
-      cp "$skel/.bashrc" "$user_home/.bashrc"
-      chown "$username:$username" "$user_home/.bashrc"
+      _copy_file "$skel/.bashrc" "$user_home/.bashrc" "$username"
     fi
 
     if [ -f "$skel/.zshrc" ]; then
-      cp "$skel/.zshrc" "$user_home/.zshrc"
-      chown "$username:$username" "$user_home/.zshrc"
+      _copy_file "$skel/.zshrc" "$user_home/.zshrc" "$username"
     fi
+  done
+}
+
+_copy_file() {
+  local source="$1"
+  local target="$2"
+  local username="$3"
+
+  mkdir -p "$(dirname "$target")"
+  cp -a "$source" "$target"
+  chown "$username:$username" "$target"
+}
+
+_copy_tree_files() {
+  local source="$1"
+  local target="$2"
+  local username="$3"
+  local source_path
+  local relative_path
+  local target_path
+
+  if [ ! -d "$target" ]; then
+    mkdir -p "$target"
+    chown "$username:$username" "$target"
+  fi
+
+  find "$source" -type d | while IFS= read -r source_path; do
+    relative_path="${source_path#$source}"
+    target_path="$target$relative_path"
+
+    if [ -d "$target_path" ]; then
+      continue
+    fi
+
+    mkdir -p "$target_path"
+    chown "$username:$username" "$target_path"
+  done
+
+  find "$source" -type f | while IFS= read -r source_path; do
+    relative_path="${source_path#$source/}"
+    target_path="$target/$relative_path"
+
+    mkdir -p "$(dirname "$target_path")"
+    cp -a "$source_path" "$target_path"
+    chown "$username:$username" "$target_path"
   done
 }

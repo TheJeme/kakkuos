@@ -149,31 +149,25 @@ paths_match() {
   fi
 }
 
-backup_existing_path() {
-  local target="$1"
-  local backup="$target.bak.$(date +%Y%m%d%H%M%S)"
-
-  mv "$target" "$backup"
-  echo "Backed up $target to $backup"
-}
-
 copy_config_dir() {
   local name="$1"
   local source="$REPO_DIR/dotfiles/$name"
   local target="$HOME/.config/$name"
+  local source_path=""
+  local relative_path=""
+  local target_path=""
 
   if [[ -d "$source" ]]; then
-    if [[ -e "$target" ]]; then
-      if paths_match "$source" "$target"; then
-        echo "Unchanged: $target"
-        return
-      fi
+    mkdir -p "$target"
 
-      backup_existing_path "$target"
-    fi
+    while IFS= read -r -d '' source_path; do
+      relative_path="${source_path#$source/}"
+      target_path="$target/$relative_path"
 
-    cp -r "$source" "$target"
-    echo "Installed: $target"
+      mkdir -p "$(dirname "$target_path")"
+      cp -a "$source_path" "$target_path"
+      echo "Installed: $target_path"
+    done < <(find "$source" -type f -print0)
   fi
 }
 
@@ -190,10 +184,9 @@ copy_file_if_changed() {
       echo "Unchanged: $target"
       return
     fi
-
-    backup_existing_path "$target"
   fi
 
+  mkdir -p "$(dirname "$target")"
   cp "$source" "$target"
   echo "Installed: $target"
 }
@@ -210,18 +203,7 @@ copy_niri_config() {
   copy_file_if_changed "$source/config.kdl" "$target/config.kdl"
 
   if [[ -d "$source/kakku" ]]; then
-    if [[ -e "$target/kakku" ]]; then
-      if paths_match "$source/kakku" "$target/kakku"; then
-        echo "Unchanged: $target/kakku"
-      else
-        backup_existing_path "$target/kakku"
-        cp -r "$source/kakku" "$target/kakku"
-        echo "Installed: $target/kakku"
-      fi
-    else
-      cp -r "$source/kakku" "$target/kakku"
-      echo "Installed: $target/kakku"
-    fi
+    copy_config_dir niri/kakku
   fi
 }
 
@@ -434,7 +416,9 @@ if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
   if has_command dms; then
     DMS_PRIVESC="${DMS_PRIVESC:-sudo}" dms greeter install --yes || true
     DMS_PRIVESC="${DMS_PRIVESC:-sudo}" dms greeter enable --yes || true
-    DMS_PRIVESC="${DMS_PRIVESC:-sudo}" dms greeter sync --yes || true
+    if [[ "${KAKKU_SYNC_DMS_GREETER:-0}" == "1" ]]; then
+      DMS_PRIVESC="${DMS_PRIVESC:-sudo}" dms greeter sync --yes || true
+    fi
   fi
   sudo install -Dm644 "$REPO_DIR/system/greetd/config.toml" /etc/greetd/config.toml
   sudo systemctl disable sddm.service 2>/dev/null || true
