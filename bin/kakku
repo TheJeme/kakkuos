@@ -347,15 +347,17 @@ show_keybinds() {
 KakkuOS keybindings:
   Help and overview
     Super+§                       Show keybindings help
-    Super+D / Super+Tab           Toggle overview
-    Super+S                       Start Kakku screensaver
+    Super+Tab                     Toggle overview
+    Super+Alt+S                   Start Kakku screensaver
     Super+Escape                  Toggle shortcut inhibition
 
   DMS and applications
     Super+T                       Open Ghostty terminal
-    Super+B                       Open browser
-    Super+Shift+D                 Open Discord/Vesktop
-    Super+Shift+S                 Open Steam
+    Super+E                       Open Dolphin files
+    Super+B                       Open Zen browser
+    Super+Shift+B                 Open Chrome fallback browser
+    Super+D                       Open Discord/Vesktop
+    Super+S                       Open Steam
     Super+Space                   Open DMS launcher
     Super+V                       Open clipboard
     Super+M / Ctrl+Alt+Delete     Open task manager
@@ -374,7 +376,6 @@ KakkuOS keybindings:
     Super+Shift+T                 Toggle floating
     Super+Shift+V                 Switch floating/tiling focus
     Super+W                       Toggle tabbed column
-    Super+Shift+W                 Create window rule
     Super+Alt+Left/Right          Consume or expel window
     Super+.                       Expel window from column
     Super+Home / Super+End        Focus first/last column
@@ -394,8 +395,6 @@ KakkuOS keybindings:
     Super+PageUp/PageDown         Focus workspace up/down
     Super+U/I                     Focus workspace down/up
     Super+Ctrl+Up/Down or U/I     Move column to workspace
-    Super+Shift+PageUp/PageDown   Move workspace up/down
-    Super+Shift+U/I               Move workspace down/up
     Super+1..9                    Switch workspace by position
     Super+Shift+1..9              Move column to workspace position
 
@@ -432,7 +431,6 @@ KakkuOS keybindings:
     Ctrl+Volume keys              Seek media
     Brightness keys               Adjust display brightness
     Alt+Tab / Alt+Shift+Tab       Cycle windows on output
-    Super+Shift+E                 Exit niri
 EOF
 }
 

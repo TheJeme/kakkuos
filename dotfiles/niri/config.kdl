@@ -278,7 +278,9 @@ binds {
 
     // === Application Launchers ===
     Mod+T hotkey-overlay-title="Open Terminal" { spawn "ghostty"; }
+    Mod+E hotkey-overlay-title="Open Files" { spawn "dolphin"; }
     Mod+B hotkey-overlay-title="Open Browser" { spawn "zen-browser"; }
+    Mod+Shift+B hotkey-overlay-title="Open Chrome" { spawn "sh" "-lc" "command -v google-chrome-stable >/dev/null 2>&1 && exec google-chrome-stable || exec google-chrome"; }
     Mod+D hotkey-overlay-title="Open Discord" { spawn "vesktop"; }
     Mod+S hotkey-overlay-title="Open Steam" { spawn "steam"; }
     Mod+Space hotkey-overlay-title="Application Launcher" {
@@ -305,7 +307,6 @@ binds {
     Mod+Alt+L hotkey-overlay-title="Lock Screen" {
         spawn "dms" "ipc" "call" "lock" "lock";
     }
-    Mod+Shift+E { quit; }
     Ctrl+Alt+Delete hotkey-overlay-title="Task Manager" {
         spawn "dms" "ipc" "call" "processlist" "focusOrToggle";
     }
@@ -357,7 +358,6 @@ binds {
     Mod+Shift+T { toggle-window-floating; }
     Mod+Shift+V { switch-focus-between-floating-and-tiling; }
     Mod+W { toggle-column-tabbed-display; }
-    Mod+Shift+W hotkey-overlay-title="Create window rule" { spawn "dms" "ipc" "call" "window-rules" "toggle"; }
 
     // === Focus Navigation ===
     Mod+Left  { focus-column-or-monitor-left; }
@@ -414,12 +414,6 @@ binds {
     Mod+Ctrl+Up   { move-column-to-workspace-up; }
     Mod+Ctrl+U         { move-column-to-workspace-down; }
     Mod+Ctrl+I         { move-column-to-workspace-up; }
-
-    // === Move Workspaces ===
-    Mod+Shift+Page_Down { move-workspace-down; }
-    Mod+Shift+Page_Up   { move-workspace-up; }
-    Mod+Shift+U         { move-workspace-down; }
-    Mod+Shift+I         { move-workspace-up; }
 
     // === Mouse Wheel Navigation ===
     Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
