@@ -254,6 +254,18 @@ install_dms_user_settings() {
   echo "Installed: $target"
 }
 
+enable_user_service_if_available() {
+  local service="$1"
+
+  if [[ ! -f "/usr/lib/systemd/user/$service" && ! -f "/etc/systemd/user/$service" ]]; then
+    echo "Warning: user service not found, skipping: $service" >&2
+    return 0
+  fi
+
+  sudo systemctl --global enable "$service" || true
+  systemctl --user enable --now "$service" 2>/dev/null || true
+}
+
 require_command sudo
 require_command pacman
 
@@ -419,10 +431,10 @@ fi
 
 if [[ -f "$REPO_DIR/system/systemd/user/kakku-idle.service" ]]; then
   sudo install -Dm644 "$REPO_DIR/system/systemd/user/kakku-idle.service" /usr/lib/systemd/user/kakku-idle.service
-  sudo systemctl --global enable kakku-idle.service || true
   systemctl --user daemon-reload 2>/dev/null || true
-  systemctl --user enable --now kakku-idle.service 2>/dev/null || true
-  systemctl --user enable --now dsearch.service 2>/dev/null || true
+  enable_user_service_if_available dms.service
+  enable_user_service_if_available dsearch.service
+  enable_user_service_if_available kakku-idle.service
 fi
 
 sudo systemctl enable NetworkManager || true

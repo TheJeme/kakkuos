@@ -119,7 +119,7 @@ hotkey-overlay {
 }
 cursor {
     xcursor-theme "Breeze"
-    xcursor-size 16
+    xcursor-size 12
     hide-after-inactive-ms 1000
 }
 prefer-no-csd

@@ -112,6 +112,21 @@ check_user_service_available() {
   fi
 }
 
+check_user_service_enabled() {
+  local service="$1"
+
+  if ! has_command systemctl; then
+    echo "warn user service unchecked: $service"
+    return 0
+  fi
+
+  if systemctl --user is-enabled "$service" >/dev/null 2>&1; then
+    echo "ok   user service enabled: $service"
+  else
+    echo "warn user service not enabled: $service"
+  fi
+}
+
 check_login_shell() {
   local shell_path=""
 
@@ -326,6 +341,7 @@ fix_user_services() {
   fi
 
   systemctl --user daemon-reload 2>/dev/null || true
+  systemctl --user enable --now dms.service 2>/dev/null || true
   systemctl --user enable --now kakku-idle.service 2>/dev/null || true
   systemctl --user enable --now dsearch.service 2>/dev/null || true
 }
@@ -550,6 +566,9 @@ run_doctor_checks() {
   check_user_service_available dms.service
   check_user_service_available dsearch.service
   check_user_service_available kakku-idle.service
+  check_user_service_enabled dms.service
+  check_user_service_enabled dsearch.service
+  check_user_service_enabled kakku-idle.service
 
   if (( failed )); then
     echo
