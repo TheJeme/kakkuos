@@ -368,6 +368,7 @@ KakkuOS keybindings:
     Super+Shift+N                 Open notepad
     Super+Alt+L                   Lock screen
     Super+Shift+P                 Pick screen color to clipboard
+    Ctrl+Alt+End                  Exit niri
 
   Windows and columns
     Super+Q                       Close active window
