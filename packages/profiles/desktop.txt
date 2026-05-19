@@ -8,11 +8,17 @@ dms-shell-niri
 breeze-cursors
 swayidle
 matugen
+qt6-imageformats
 qt6-multimedia
 qt6-multimedia-ffmpeg
+kimageformats
+cava
+khal
 wtype
 power-profiles-daemon
 i2c-tools
+cups-pk-helper
+fprintd
 ghostty
 dolphin
 zen-browser-bin
