@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source_file="${KAKKU_LIMINE_DEFAULTS_SOURCE:-/usr/share/kakku/default/limine}"
+target_file="/etc/default/limine"
+changed=0
+
+require_root() {
+  if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+    echo "Run as root: sudo kakku-limine-defaults" >&2
+    exit 1
+  fi
+}
+
+backup_file() {
+  local file="$1"
+
+  if [[ -f "$file" && ! -f "$file.kakku.bak" ]]; then
+    cp "$file" "$file.kakku.bak"
+    echo "Backed up $file to $file.kakku.bak"
+  fi
+}
+
+read_timeout() {
+  local file="$1"
+
+  awk -F= '
+    /^[[:space:]]*TIMEOUT[[:space:]]*=/ {
+      value = $2
+      gsub(/^[[:space:]"]+|[[:space:]"]+$/, "", value)
+      print value
+      exit
+    }
+  ' "$file"
+}
+
+apply_timeout() {
+  local timeout_value="$1"
+  local tmp
+
+  if [[ -z "$timeout_value" ]]; then
+    echo "No TIMEOUT value found in $source_file; skipped Limine defaults." >&2
+    return 0
+  fi
+
+  tmp="$(mktemp)"
+  if [[ -f "$target_file" ]]; then
+    awk -v timeout="$timeout_value" '
+      /^[[:space:]]*TIMEOUT[[:space:]]*=/ {
+        if (!seen) {
+          print "TIMEOUT=" timeout
+          seen = 1
+        }
+        next
+      }
+      { print }
+      END {
+        if (!seen) {
+          print "TIMEOUT=" timeout
+        }
+      }
+    ' "$target_file" > "$tmp"
+  else
+    printf 'TIMEOUT=%s\n' "$timeout_value" > "$tmp"
+  fi
+
+  if [[ -f "$target_file" ]] && cmp -s "$target_file" "$tmp"; then
+    rm -f "$tmp"
+    return 0
+  fi
+
+  backup_file "$target_file"
+  install -Dm644 "$tmp" "$target_file"
+  rm -f "$tmp"
+  changed=1
+  echo "Applied Limine TIMEOUT=$timeout_value to $target_file."
+}
+
+require_root
+
+if [[ ! -f "$source_file" ]]; then
+  echo "Limine defaults source not found: $source_file" >&2
+  exit 1
+fi
+
+apply_timeout "$(read_timeout "$source_file")"
+
+if (( changed )) && command -v limine-update >/dev/null 2>&1; then
+  limine-update
+elif (( changed )); then
+  echo "Warning: limine-update not found; run it manually after installing Limine tooling." >&2
+else
+  echo "Limine defaults already applied."
+fi

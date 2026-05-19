@@ -11,6 +11,10 @@ post_install() {
     cp /usr/share/kakku/os-release /usr/lib/os-release
   fi
 
+  if command -v kakku-limine-defaults >/dev/null 2>&1; then
+    kakku-limine-defaults || true
+  fi
+
   # Remove CachyOS welcome app autostart
   rm -f /etc/xdg/autostart/cachyos-hello.desktop
 

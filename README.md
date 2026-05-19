@@ -98,7 +98,7 @@ cd kakkuos
 ./install.sh
 ```
 
-The script installs the package list, copies dotfiles into the current user's home directory, installs and configures the DMS greeter for login, disables the default CachyOS Plymouth boot splash, sets `fish` as the login shell when available, and enables common services.
+The script installs the package list, copies dotfiles into the current user's home directory, installs and configures the DMS greeter for login, removes the default CachyOS Plymouth boot splash, sets `fish` as the login shell when available, and enables common services.
 
 The installer is safe to run more than once. Unchanged config files are skipped, changed local config paths are backed up with a timestamp, and package installs use `--needed`.
 
@@ -198,6 +198,9 @@ These packages make the system useful for source builds, package builds, and day
 | `cachyos-settings` | CachyOS baseline system tuning package; provides `game-performance` and the default CachyOS ananicy/zram integration. |
 | `cachyos-rate-mirrors` | CachyOS mirror ranking helper for improving repository download speed and reliability. |
 | `chwd` | CachyOS hardware detection tool. Kakku installs it for inspection and manual troubleshooting, but does not auto-apply driver changes. |
+| `ufw` | Simple firewall enabled by default with denied incoming and allowed outgoing traffic. |
+| `wireless-regdb` | Wireless regulatory database. Kakku installs it but does not hardcode a country-specific Wi-Fi regulatory domain. |
+| `fuse2` | Compatibility layer required by many AppImages. |
 
 ### Niri And DankMaterialShell Desktop
 
@@ -274,7 +277,7 @@ These packages cover common laptop and desktop hardware needs.
 | `tailscale` | WireGuard-based private mesh VPN for connecting personal machines and servers. |
 | `proton-vpn-gtk-app` | Proton VPN graphical client. |
 
-The installer enables `NetworkManager`, `bluetooth`, `docker`, `tailscaled`, `ananicy-cpp`, and `power-profiles-daemon` when available.
+The installer enables `NetworkManager`, `bluetooth`, `docker`, `tailscaled`, `ananicy-cpp`, `power-profiles-daemon`, and `ufw` when available. UFW defaults to denying incoming traffic and allowing outgoing traffic.
 
 ### Shell And Prompt
 
@@ -457,7 +460,11 @@ Zen Browser is configured with a policy file that force-installs uBlock Origin, 
 
 ## Boot Splash
 
-CachyOS ISOs enable Plymouth by default for the graphical boot splash. KakkuOS disables that splash during installation. The internal helper removes the Plymouth hook from `/etc/mkinitcpio.conf` when present, rebuilds initramfs with `mkinitcpio -P` only when that file changed, and leaves a `.kakku.bak` backup for the edited file.
+CachyOS ISOs enable Plymouth by default for the graphical boot splash. KakkuOS removes that splash during installation using the CachyOS/Limine-style kernel arguments in `/etc/default/limine`: `plymouth.enable=0 disablehooks=plymouth`, while also removing `splash` from Kakku-managed default Limine arguments. The helper runs `limine-update` when those arguments changed, removes the `plymouth` mkinitcpio hook when present, rebuilds initramfs only when that file changed, removes installed Plymouth packages, and leaves `.kakku.bak` backups for edited files.
+
+## Boot Menu
+
+KakkuOS sets Limine's default timeout to `1` second through `/etc/default/limine`. Normal boots continue quickly, but the boot menu remains reachable by interrupting Limine during that short window. The helper updates only the `TIMEOUT` key and preserves other CachyOS Limine defaults such as snapshot integration.
 
 ## Phase 2: Package The Defaults
 

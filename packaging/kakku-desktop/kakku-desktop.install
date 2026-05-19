@@ -1,6 +1,10 @@
 post_install() {
   systemctl enable ananicy-cpp.service 2>/dev/null || true
   systemctl enable power-profiles-daemon.service 2>/dev/null || true
+  systemctl enable ufw.service 2>/dev/null || true
+  if command -v kakku-firewall-defaults >/dev/null 2>&1; then
+    kakku-firewall-defaults || true
+  fi
 
   if command -v kakku-browser-policies >/dev/null 2>&1; then
     kakku-browser-policies || true
@@ -18,6 +22,10 @@ post_install() {
 post_upgrade() {
   systemctl enable ananicy-cpp.service 2>/dev/null || true
   systemctl enable power-profiles-daemon.service 2>/dev/null || true
+  systemctl enable ufw.service 2>/dev/null || true
+  if command -v kakku-firewall-defaults >/dev/null 2>&1; then
+    kakku-firewall-defaults || true
+  fi
 
   if command -v kakku-browser-policies >/dev/null 2>&1; then
     kakku-browser-policies || true

@@ -324,6 +324,16 @@ if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
     sudo install -Dm644 "$REPO_DIR/system/environment.d/kakku.conf" /etc/environment.d/kakku.conf
   fi
 
+  if [[ -f "$REPO_DIR/system/default/limine" ]]; then
+    sudo install -Dm644 "$REPO_DIR/system/default/limine" /usr/share/kakku/default/limine
+  fi
+
+  if [[ -x "$REPO_DIR/bin/kakku-limine-defaults" ]]; then
+    sudo KAKKU_LIMINE_DEFAULTS_SOURCE="$REPO_DIR/system/default/limine" "$REPO_DIR/bin/kakku-limine-defaults"
+  elif has_command kakku-limine-defaults; then
+    sudo KAKKU_LIMINE_DEFAULTS_SOURCE="$REPO_DIR/system/default/limine" kakku-limine-defaults
+  fi
+
   if [[ -f "$REPO_DIR/system/systemd/user/kakku-idle.service" ]]; then
     sudo install -Dm644 "$REPO_DIR/system/systemd/user/kakku-idle.service" /usr/lib/systemd/user/kakku-idle.service
     sudo systemctl --global enable kakku-idle.service || true
@@ -338,6 +348,11 @@ if [[ "$KAKKU_SYSTEM_CONFIG" == "1" ]]; then
   sudo systemctl enable tailscaled || true
   sudo systemctl enable ananicy-cpp || true
   sudo systemctl enable power-profiles-daemon || true
+  if [[ -x "$REPO_DIR/bin/kakku-firewall-defaults" ]]; then
+    sudo "$REPO_DIR/bin/kakku-firewall-defaults" || true
+  elif has_command kakku-firewall-defaults; then
+    sudo kakku-firewall-defaults || true
+  fi
   sudo usermod -aG docker "$USER" || true
 
   # Set up DMS greeter as login manager UI.

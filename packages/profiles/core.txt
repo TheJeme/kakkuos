@@ -5,6 +5,9 @@ pacman-contrib
 cachyos-settings
 cachyos-rate-mirrors
 chwd
+ufw
+wireless-regdb
+fuse2
 networkmanager
 bluez
 bluez-utils

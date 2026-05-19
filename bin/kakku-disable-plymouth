@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-changed=0
+changed_limine=0
+changed_mkinitcpio=0
+removed_packages=0
 
 require_root() {
   if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
@@ -17,6 +19,70 @@ backup_file() {
     cp "$file" "$file.kakku.bak"
     echo "Backed up $file to $file.kakku.bak"
   fi
+}
+
+disable_limine_plymouth() {
+  local file="/etc/default/limine"
+  local tmp
+
+  if [[ ! -f "$file" ]]; then
+    echo "No $file found; skipped Limine Plymouth kernel arguments."
+    return 0
+  fi
+
+  tmp="$(mktemp)"
+  awk '
+    function normalize(line,    prefix, value, close, quote, n, parts, i, token, out) {
+      if (line !~ /^[[:space:]]*KERNEL_CMDLINE\[default\]\+=/) {
+        return line
+      }
+
+      prefix = line
+      sub(/=.*/, "=", prefix)
+      value = line
+      sub(/^[^=]*=/, "", value)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+
+      quote = ""
+      close = ""
+      if (value ~ /^"/ && value ~ /"$/) {
+        quote = "\""
+        close = "\""
+        sub(/^"/, "", value)
+        sub(/"$/, "", value)
+      }
+
+      n = split(value, parts, /[[:space:]]+/)
+      out = ""
+      for (i = 1; i <= n; i++) {
+        token = parts[i]
+        if (token == "" || token == "splash" || token == "plymouth.enable=0" || token == "disablehooks=plymouth") {
+          continue
+        }
+        out = out (out ? " " : "") token
+      }
+      out = out (out ? " " : "") "plymouth.enable=0 disablehooks=plymouth"
+      seen = 1
+      return prefix quote out close
+    }
+
+    { print normalize($0) }
+
+    END {
+      if (!seen) {
+        print "KERNEL_CMDLINE[default]+=\"plymouth.enable=0 disablehooks=plymouth\""
+      }
+    }
+  ' "$file" > "$tmp"
+
+  if ! cmp -s "$file" "$tmp"; then
+    backup_file "$file"
+    cp "$tmp" "$file"
+    changed_limine=1
+    echo "Updated $file to disable Plymouth through Limine kernel arguments."
+  fi
+
+  rm -f "$tmp"
 }
 
 remove_mkinitcpio_plymouth() {
@@ -38,20 +104,62 @@ remove_mkinitcpio_plymouth() {
   if ! cmp -s "$file" "$tmp"; then
     backup_file "$file"
     cp "$tmp" "$file"
-    changed=1
+    changed_mkinitcpio=1
     echo "Removed plymouth hook from $file."
   fi
 
   rm -f "$tmp"
 }
 
+remove_plymouth_packages() {
+  local package
+  local -a packages=(
+    plymouth
+    plymouth-git
+    plymouth-kcm
+    cachyos-plymouth-theme
+    cachyos-plymouth-bootanimation
+  )
+  local -a installed=()
+
+  if ! command -v pacman >/dev/null 2>&1; then
+    echo "pacman not found; skipped Plymouth package removal."
+    return 0
+  fi
+
+  for package in "${packages[@]}"; do
+    if pacman -Qq "$package" >/dev/null 2>&1; then
+      installed+=("$package")
+    fi
+  done
+
+  if (( ${#installed[@]} == 0 )); then
+    echo "No Plymouth packages found to remove."
+    return 0
+  fi
+
+  pacman -Rns --noconfirm "${installed[@]}"
+  removed_packages=1
+}
+
 require_root
 
+disable_limine_plymouth
 remove_mkinitcpio_plymouth
 
-if (( changed )) && command -v mkinitcpio >/dev/null 2>&1; then
+if (( changed_mkinitcpio )) && command -v mkinitcpio >/dev/null 2>&1; then
   mkinitcpio -P
-elif (( ! changed )); then
+fi
+
+if (( changed_limine )) && command -v limine-update >/dev/null 2>&1; then
+  limine-update
+elif (( changed_limine )); then
+  echo "Warning: limine-update not found; run it manually after installing Limine tooling." >&2
+fi
+
+remove_plymouth_packages
+
+if (( ! changed_limine && ! changed_mkinitcpio && ! removed_packages )); then
   echo "Plymouth boot splash already disabled."
 fi
 

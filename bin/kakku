@@ -303,13 +303,17 @@ fix_core_services() {
     sudo_cmd=(sudo)
   fi
 
-  for service in NetworkManager.service bluetooth.service greetd.service ananicy-cpp.service power-profiles-daemon.service; do
+  for service in NetworkManager.service bluetooth.service greetd.service ananicy-cpp.service power-profiles-daemon.service ufw.service; do
     if system_unit_exists "$service"; then
       "${sudo_cmd[@]}" systemctl enable "$service" || true
     else
       echo "warn service unit missing: $service"
     fi
   done
+
+  if has_command kakku-firewall-defaults; then
+    "${sudo_cmd[@]}" kakku-firewall-defaults || true
+  fi
 }
 
 fix_user_services() {
@@ -337,7 +341,7 @@ show_service_status() {
 }
 
 show_services() {
-  for service in NetworkManager bluetooth docker tailscaled ananicy-cpp power-profiles-daemon; do
+  for service in NetworkManager bluetooth docker tailscaled ananicy-cpp power-profiles-daemon ufw; do
     show_service_status "$service"
   done
 }
@@ -542,6 +546,7 @@ run_doctor_checks() {
   check_service_enabled tailscaled
   check_service_enabled ananicy-cpp
   check_service_enabled power-profiles-daemon
+  check_service_enabled ufw
   check_user_service_available dms.service
   check_user_service_available dsearch.service
   check_user_service_available kakku-idle.service
